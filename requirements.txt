@@ -1,6 +1,6 @@
 dotenv~=0.9.9
 python-dotenv~=1.0.1
-langchain-google-genai~=2.1.1
+langchain-google-genai
 pydantic~=2.10.6
 protobuf~=5.29.4
 langgraph~=0.3.20
@@ -13,4 +13,4 @@ beautifulsoup4~=4.13.3
 gradio~=5.23.1
 vertexai~=1.71.1
 google-cloud-aiplatform~=1.71.1
-google-generativeai~=0.8.4
+google-generativeai

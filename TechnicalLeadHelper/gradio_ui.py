@@ -175,7 +175,7 @@ with demo:
     work_items_dropdown.change(populate_work_items_info, inputs=work_items_dropdown, outputs=[description, story_points, assigned_to, no_of_task])
 
     with gr.Tab("Talk with Technical Lead"):
-        chatbot = gr.Chatbot(history, type="messages", autoscroll=True, show_copy_button=True, resizeable=True)
+        chatbot = gr.Chatbot(history, type="messages", autoscroll=True, show_copy_button=True)
         msg = gr.Textbox(label="Your thoughts !!!", submit_btn=True)
         msg.submit(respond, [msg, work_items_dropdown], [msg, chatbot])
         clr = gr.Button("Reset History")
