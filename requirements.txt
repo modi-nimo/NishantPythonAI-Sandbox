@@ -1,3 +1,7 @@
 dotenv~=0.9.9
 python-dotenv~=1.0.1
 langchain-google-genai~=2.1.1
+pydantic~=2.10.6
+protobuf~=5.29.4
+langgraph~=0.3.20
+langgraph-supervisor~=0.0.11

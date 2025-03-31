@@ -9,7 +9,9 @@ from constants import GEMINI_MODEL
 load_dotenv()
 # Run command playwright install on terminal
 
-async def perform_task_on_browser(task_to_perform: str):
+async def perform_task_on_browser(task_to_perform: str) -> str:
+    """ Perform a task on the browser """
+
     browser = Browser(
         config=BrowserConfig(
             headless=True,
@@ -32,12 +34,13 @@ async def perform_task_on_browser(task_to_perform: str):
         print("-------------------")
         return res
 
-if __name__ == "__main__":
-    task = """
-    Go to google.com , search for IMDB rating of Interstellar and get me following information.
-            1. Type: Is it a Movie or Series ?
-            2. Rating: its Imdb Rating
-            3. Streaming On: On what platform it is streaming.
-            4. Title: Title of the Movie or Series
-    """
-    asyncio.run(perform_task_on_browser(task))
+#
+# if __name__ == "__main__":
+#     task = """
+#     Go to google.com , search for IMDB rating of Interstellar and get me following information.
+#             1. Type: Is it a Movie or Series ?
+#             2. Rating: its Imdb Rating
+#             3. Streaming On: On what platform it is streaming.
+#             4. Title: Title of the Movie or Series
+#     """
+#     asyncio.run(perform_task_on_browser(task))
