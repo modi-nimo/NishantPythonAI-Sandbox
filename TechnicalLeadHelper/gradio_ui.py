@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from vertexai.preview.generative_models import GenerativeModel
 from google.cloud import aiplatform
 
+from TechnicalLeadHelper.main import get_all_work_items_by_sprint_num
 from constants import LIST_OF_NAMES
 
 load_dotenv()
@@ -39,8 +40,10 @@ def clear_button():
     return history
 
 
-def respond(user_msg, work_item):
+def respond(user_msg, work_item=None):
 
+    if work_item is None:
+        work_item = {}
     if len(history) == 0:
         user_story_title = work_item.get("title", "No Title")
         technical_description = work_item.get("description", "No Description")
@@ -113,10 +116,12 @@ def get_list_of_names():
 def get_sprint_info(sprint_num):
     print(f"Getting information for sprint number:{sprint_num}")
 
-    response = requests.get(BASE_URL + "get_all_work_items?sprint_number=" + str(sprint_num))
-    if response.status_code == 200:
-        data = response.json()
-        # print(data)
+    # response = requests.get(BASE_URL + "get_all_work_items?sprint_number=" + str(sprint_num))
+    response = get_all_work_items_by_sprint_num(sprint_num)
+    # if response.status_code == 200:
+    if response:
+        # data = response.json()
+        data = response
         work_items = []
 
         for type_of_item in data:
