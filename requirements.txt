@@ -1,6 +1,6 @@
 dotenv~=0.9.9
 python-dotenv~=1.0.1
-langchain-google-genai
+langchain-google-genai~=2.0.10
 pydantic~=2.10.6
 protobuf~=5.29.4
 langgraph~=0.3.20
@@ -14,3 +14,6 @@ gradio~=5.23.1
 vertexai~=1.71.1
 google-cloud-aiplatform~=1.71.1
 google-generativeai
+google-genai
+agno~=1.2.6
+groq
