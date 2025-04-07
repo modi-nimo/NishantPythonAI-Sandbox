@@ -3,6 +3,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from constants import NISHANT_MODI
 
 load_dotenv()
 
@@ -10,6 +11,7 @@ personal_access_token = os.environ["PERSONAL_ACCESS_TOKEN"]
 auth = ("", personal_access_token)
 
 def get_iteration_info(organization, project, team,  _sprint_name):
+    print("Getting Iteration info for sprint name:", _sprint_name)
     url = f"https://dev.azure.com/{organization}/{project}/{team}/_apis/work/teamsettings/iterations?api-version=7.1"
 
     response = requests.get(url, auth=auth)
@@ -29,6 +31,7 @@ def extract_message_from_html(_html):
 
 
 def get_all_work_items(organization, project, team, iteration_id, types=["User Story", "Bug"]):
+    print("Getting all work items for iteration id:", iteration_id)
     dict_of_all_workitems = {"User Story": [],
                              "Bug": []}  # Key is the type of work item and value is the list of work items
 
@@ -98,6 +101,7 @@ def get_all_work_items(organization, project, team, iteration_id, types=["User S
 
 def create_task(task_title, parent_id, organization, project, task_description=None, task_assigned_to=None, iteration=None, area=None,
                 original_estimate=None):
+    print("Creating a task.")
     url = f"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$Task?api-version=7.1"
     headers = {
         "Content-Type": "application/json-patch+json"
@@ -194,5 +198,19 @@ def create_task(task_title, parent_id, organization, project, task_description=N
     return response.json()
 
 
-
-# ----------
+def comment_on_work_item(item_id:int, comment:str, organization, project) -> str:
+    url = f"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{item_id}?api-version=7.1"
+    headers = {
+        "Content-Type": "application/json-patch+json"
+    }
+    data = [
+        {
+            "op": "add",
+            "path": "/fields/System.History",
+            "from": NISHANT_MODI,
+            "value": comment
+        }
+    ]
+    response = requests.patch(url, auth=auth, headers=headers, json=data)
+    res = "Comment added." if response.status_code == 200 else "Failed to add comment. Try again later"
+    return res
