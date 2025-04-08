@@ -3,6 +3,7 @@ import os
 
 from agno.agent import Agent
 from agno.models.google import Gemini
+from agno.team import Team
 from dotenv import load_dotenv
 
 from TechnicalLeadHelper.helper import get_all_work_items, get_iteration_info, comment_on_work_item, create_task
@@ -104,16 +105,78 @@ def create_a_task_for_work_item(item_id: int, task_title: str, task_description:
     _id = res.get("id", "No ID")
     return f"Task created successfully with ID: {_id}"
 
+def rewrite_content(content: str) -> str:
+    """
+    Rewrite the content to improve the overall quality.
+    :param content: Content to be rewritten.
+    :return: Rewritten content.
+    """
+    print("Rewriting content")
+    # Use the Gemini model to rewrite the content
+    from groq import Groq
+    client = Groq(api_key=os.environ["GROQ_API_KEY"])
+    response = client.chat.completions.create(
+        messages=[
+            {"role":"system","content":"Please proofread the content. Correct grammatical and spelling mistakes, and improve the overall quality of the content."},
+            {"role":"user","content":content}
+        ],
+        model = "mistral-saba-24b"
+    )
+    content = response.choices[0].message.content
+    return content
+
 
 ##### AGENT #####
 
-technical_lead_agent = Agent(
-    name="Technical Lead Agent",
+content_writer_agent = Agent(
+    name="Content Writer Agent",
+    role="You are a expert content writer. You can rewrite the content to improve the overall quality.The content can be a user story, task description, or any other content.",
     model=Gemini(id=GEMINI_MODEL),
-    tools=[get_count_of_work_items, list_down_all_items_by_type, get_single_work_item_info, add_comment_to_work_item,
-           create_a_task_for_work_item],
+    tools=[rewrite_content],
     show_tool_calls=True,
     markdown=True
+)
+
+work_item_manager = Agent(
+    name="Work Item Manager",
+    model=Gemini(id=GEMINI_MODEL),
+    tools=[get_count_of_work_items,list_down_all_items_by_type,get_single_work_item_info],
+    show_tool_calls=True,
+    markdown=True
+)
+
+task_and_comment_agent = Agent(
+    name="Task and Comment Agent",
+    model=Gemini(id=GEMINI_MODEL),
+    tools=[add_comment_to_work_item,create_a_task_for_work_item],
+    show_tool_calls=True,
+    markdown=True
+)
+
+technical_lead_team = Team(
+    name="Technical Lead Team",
+    mode="coordinate",
+    model=Gemini(id=GEMINI_MODEL),
+    members=[content_writer_agent, work_item_manager, task_and_comment_agent],
+    markdown=True,
+    description="You are a task router that directs certain tasks to the appropriate agent.",
+    instructions="""
+     You will perform the tasks and complete it using appropriate agent. Things to consider while performing the tasks:
+     1. Whenever user is asking you to add a comment to a work item, rewrite the content of comment , to be grammatical correct, easy to understand and well written.
+     2. Whenever user is asking you to create a task, rewrite the task description, to be professionally written without any grammatical errors and spelling mistakes.
+     3. Try to answer the user query in a crisp and clear manner.
+     
+     Always check the task to do before routing to an agent.
+     Always respond me the final answer in a markdown format.
+     
+     Remember: You are the final gatekeeper of the task. You need to make sure that the task is completed by the appropriate agent.
+     
+     """,
+    show_members_responses=True,
+    enable_team_history=True,
+    share_member_interactions=True,
+    debug_mode=True,
+    use_json_mode=True
 )
 
 if __name__ == "__main__":
@@ -121,4 +184,4 @@ if __name__ == "__main__":
     get_all_work_items_for_sprint(sprint_number)
     while True:
         user_message = input("Enter your message: ")
-        technical_lead_agent.print_response(user_message, stream=True)
+        technical_lead_team.print_response(user_message, stream=True)
