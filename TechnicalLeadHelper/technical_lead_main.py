@@ -23,16 +23,16 @@ all_work_items = {}
 
 ##### TOOLS BOX ######
 
-def get_all_work_items_for_sprint(sprint_number: int):
+def get_all_work_items_for_sprint(_sprint_number: int):
     """
     Get all work items for a given sprint number.
-    :param sprint_number: Sprint number to get work items for.
+    :param _sprint_number: Sprint number to get work items for.
     :return:
     """
     global all_work_items
     if len(all_work_items.items()) > 0:
         return all_work_items
-    sprint_name = os.environ["SPRINT_NAME"] + str(sprint_number)
+    sprint_name = os.environ["SPRINT_NAME"] + str(_sprint_number)
     iteration_info = get_iteration_info(organization, project, team, sprint_name)
     all_work_items = get_all_work_items(organization, project, team, iteration_info["id"])
 
