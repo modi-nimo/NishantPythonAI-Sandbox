@@ -1,6 +1,7 @@
 import json
 import os
 
+from groq import Groq
 from agno.agent import Agent
 from agno.models.google import Gemini
 from agno.team import Team
@@ -113,7 +114,6 @@ def rewrite_content(content: str) -> str:
     """
     print("Rewriting content")
     # Use the Gemini model to rewrite the content
-    from groq import Groq
     client = Groq(api_key=os.environ["GROQ_API_KEY"])
     response = client.chat.completions.create(
         messages=[
