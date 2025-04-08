@@ -130,7 +130,6 @@ def rewrite_content(content: str) -> str:
 
 content_writer_agent = Agent(
     name="Content Writer Agent",
-    role="You are a expert content writer. You can rewrite the content to improve the overall quality.The content can be a user story, task description, or any other content.",
     model=Gemini(id=GEMINI_MODEL),
     tools=[rewrite_content],
     show_tool_calls=True,
