@@ -30,12 +30,14 @@ def get_all_work_items_for_sprint(_sprint_number: int):
     :return:
     """
     global all_work_items
+    global iteration
+    iteration = os.environ["ITERATION"] + str(_sprint_number)
     if len(all_work_items.items()) > 0:
         return all_work_items
     sprint_name = os.environ["SPRINT_NAME"] + str(_sprint_number)
     iteration_info = get_iteration_info(organization, project, team, sprint_name)
     all_work_items = get_all_work_items(organization, project, team, iteration_info["id"])
-
+    return all_work_items
 
 def get_count_of_work_items() -> str:
     """
@@ -103,6 +105,7 @@ def create_a_task_for_work_item(item_id: int, task_title: str, task_description:
     res = create_task(task_title=task_title, parent_id=item_id, organization=organization, project=project,
                       task_description=task_description, task_assigned_to=task_assigned_to, iteration=iteration,
                       area=area, original_estimate=original_estimate)
+    print(res)
     _id = res.get("id", "No ID")
     return f"Task created successfully with ID: {_id}"
 
@@ -178,9 +181,9 @@ technical_lead_team = Team(
     use_json_mode=True
 )
 
-if __name__ == "__main__":
-    sprint_number = 1  # Replace with the desired sprint number
-    get_all_work_items_for_sprint(sprint_number)
-    while True:
-        user_message = input("Enter your message: ")
-        technical_lead_team.print_response(user_message, stream=True)
+# if __name__ == "__main__":
+#     sprint_number = 1  # Replace with the desired sprint number
+#     get_all_work_items_for_sprint(sprint_number)
+#     while True:
+#         user_message = input("Enter your message: ")
+#         technical_lead_team.print_response(user_message, stream=True)

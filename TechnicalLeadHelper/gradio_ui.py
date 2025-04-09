@@ -10,12 +10,12 @@ from dotenv import load_dotenv
 from vertexai.preview.generative_models import GenerativeModel
 from google.cloud import aiplatform
 
-from TechnicalLeadHelper.main import get_all_work_items_by_sprint_num
+from TechnicalLeadHelper.technical_lead_main import technical_lead_team, get_all_work_items_for_sprint
 from constants import LIST_OF_NAMES
 
 load_dotenv()
 
-BASE_URL = "http://localhost:8000/"
+# BASE_URL = "http://localhost:8000/"
 history = []
 GEMINI_MODEL = "gemini-2.0-flash"
 if os.environ.get("GOOGLE_API_KEY",None):
@@ -86,22 +86,8 @@ def respond(user_msg, work_item=None):
 # ------------ Supporting Code -------------
 
 def call_create_task(item, task_title, task_description, task_assigned_to, original_estimate):
-    url = BASE_URL + "create_task"
-    body = {
-        "task_title": task_title,
-        "parent_id": int(item["id"]),
-        "task_description": task_description,
-        "task_assigned_to": task_assigned_to,
-        "original_estimate": int(original_estimate)
-    }
-    response = requests.post(url, json=body)
-    if response.status_code == 200:
-        print("Task created successfully")
-    else:
-        print("Failed to create task")
-    response = response.json()
-    # print(response)
-    return gr.Button(value=f"Task Created Successfully. ID {response.get('id','No ID')}",interactive=False)
+    res = technical_lead_team.run(f"Create a Task for {item['id']} User story, with title {task_title}, description {task_description}, assigned to {task_assigned_to}, original estimate {original_estimate}")
+    return gr.Button(value=res.content,interactive=False) #ID {response.get('id','No ID')}
 
 def populate_work_items_info(work_item):
     _description = work_item.get("description","No Description")
@@ -116,17 +102,13 @@ def get_list_of_names():
 def get_sprint_info(sprint_num):
     print(f"Getting information for sprint number:{sprint_num}")
 
-    # response = requests.get(BASE_URL + "get_all_work_items?sprint_number=" + str(sprint_num))
-    response = get_all_work_items_by_sprint_num(sprint_num)
-    # if response.status_code == 200:
+    response = get_all_work_items_for_sprint(sprint_num)
     if response:
-        # data = response.json()
         data = response
         work_items = []
 
         for type_of_item in data:
             for item in data[type_of_item]:
-                # print(item)
                 work_items.append((item["title"], item))
         return gr.Dropdown(choices=work_items)
     else:
