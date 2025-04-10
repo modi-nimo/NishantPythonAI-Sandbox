@@ -122,13 +122,13 @@ demo = gr.Blocks()
 with demo:
     gr.Markdown(
         """
-        # Wingman Technical Helper
-        This is to help Nishant with Technical Activities
+        # AI Scrum Master
+        Assisting Scrum master for your daily activites.
         """
     )
 
     with gr.Row():
-        sprint_num_dropdown = gr.Dropdown(choices=[None, 1], label="Sprint Number", interactive=True)
+        sprint_num_dropdown = gr.Dropdown(choices=[None, 1, 2], label="Sprint Number", interactive=True)
         work_items_dropdown = gr.Dropdown(choices=[], label="Work Items", interactive=True)
 
     with gr.Row():
