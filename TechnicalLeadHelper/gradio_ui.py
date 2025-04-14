@@ -149,10 +149,10 @@ with demo:
         def render_task_form(num_tasks):
             for _ in range(num_tasks):
                 with gr.Row():
-                    task_title = gr.Textbox(label="Task Title")
-                    task_description = gr.Textbox(label="Task Description")
-                    task_assigned_to = gr.Dropdown(choices=get_list_of_names(), label="Assigned To")
-                    original_estimate = gr.Textbox(label="Original Estimate", value="8")
+                    task_title = gr.Textbox(label="Task Title", value="WM - Develop")
+                    task_description = gr.Textbox(label="Task Description", value="Develop Placeholder")
+                    task_assigned_to = gr.Dropdown(choices=get_list_of_names(), label="Assigned To", value=assigned_to.value)
+                    original_estimate = gr.Textbox(label="Original Estimate", value=str(int(story_points.value)*8) )
                     create_task_button = gr.Button("Create Task")
                     create_task_button.click(call_create_task,
                                              inputs=[work_items_dropdown, task_title, task_description,
