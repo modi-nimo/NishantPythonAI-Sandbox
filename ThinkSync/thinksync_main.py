@@ -1,9 +1,9 @@
 import json
 import os
 from datetime import datetime
+
 import google.generativeai as genai
 from dotenv import load_dotenv
-import chromadb
 
 load_dotenv()
 
@@ -11,10 +11,6 @@ genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 model = genai.GenerativeModel("gemini-2.0-flash")
 chat_session = model.start_chat()
 
-chromadb_client = chromadb.PersistentClient(path=".")
-notes_collection = chromadb_client.get_or_create_collection(name="thinksync_notes")
-
-EMBEDDING_MODEL_NAME = "text-embedding-004" # Or a Gemini embedding model if available
 
 class ThinkSyncManager:
     notes: list[dict] = []
@@ -28,6 +24,11 @@ class ThinkSyncManager:
 
         response = chat_session.send_message(content=msg)
         return response.text
+
+    def reset_my_notes(self):
+        self.notes = []
+        self.store_notes()
+        print("Reset whole notes")
 
     def extract_actions_from_note(self):
         prompt = f"""
@@ -54,7 +55,6 @@ class ThinkSyncManager:
             "message": text_note
         }
         self.notes.append(note_dict)
-        self.store_note_with_embeddings(note_dict)
         self.store_notes()
 
     def load_notes(self):
@@ -71,37 +71,3 @@ class ThinkSyncManager:
 
     def get_notes(self):
         return self.notes
-
-    def generate_embeddings_for_note(self, note_content):
-        from google import genai
-        from google.genai.types import EmbedContentConfig
-        client = genai.Client()
-        response = client.models.embed_content(
-            model=EMBEDDING_MODEL_NAME,
-            contents=[note_content],
-            config=EmbedContentConfig(
-                task_type="RETRIEVAL_DOCUMENT",
-                output_dimensionality=768
-            )
-        )
-        self.store_notes()
-        return response.embeddings[0].values
-
-    def store_note_with_embeddings(self, note:dict):
-        embedding = self.generate_embeddings_for_note(note["message"])
-        if embedding:
-            notes_collection.add(
-                documents=[note["message"]],
-                embeddings=[embedding],
-                metadatas=[{"datetime": note["timestamp"]}],
-                ids=[str(note["timestamp"])]
-            )
-    def retrieve_relevant_notes(self, query_msg, n_result=3):
-        new_embedding = self.generate_embeddings_for_note(query_msg)
-        if new_embedding:
-            results = notes_collection.query(
-                query_embeddings=[new_embedding],
-                n_results=n_result
-            )
-            return results["documents"][0]
-        return []
