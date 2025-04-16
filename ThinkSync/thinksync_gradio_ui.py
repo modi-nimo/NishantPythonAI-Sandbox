@@ -32,7 +32,7 @@ with demo:
     with gr.Tab("Notes"):
         reset_notes = gr.Button("Reset Notes")
         notes_list = get_notes_ui()
-        reset_notes.click(think_sync_manager.reset_my_notes())
+    reset_notes.click(think_sync_manager.reset_my_notes)
 
     with gr.Tab("Action Items"):
         action_items = gr.Dataframe(value=pd.DataFrame(think_sync_manager.extract_actions_from_note()),label="Action Items", type="pandas", headers=["Action Item"], interactive=False)
