@@ -30,17 +30,15 @@ def take_note_from_ui(note):
 with demo:
     note_ui = gr.Textbox(label="Note", submit_btn=True)
     with gr.Tab("Notes"):
-        reset_notes = gr.Button("Reset Notes")
         notes_list = get_notes_ui()
-    reset_notes.click(think_sync_manager.reset_my_notes)
 
     with gr.Tab("Action Items"):
-        action_items = gr.Dataframe(value=pd.DataFrame(think_sync_manager.extract_actions_from_note()),label="Action Items", type="pandas", headers=["Action Item"], interactive=False)
+        action_items = gr.Dataframe(value=pd.DataFrame(think_sync_manager.extract_actions_from_note(), columns=["Action Items"]),label="Action Items", type="pandas", interactive=False)
+
+    with gr.Tab("Maintenance"):
+        reset_notes = gr.Button("Reset Notes")
+    reset_notes.click(think_sync_manager.reset_my_notes)
+
     note_ui.submit(take_note_from_ui, inputs=note_ui, outputs=[notes_list,action_items,note_ui])
 
 demo.launch()
-
-# Share API specification with Nicolay
-# Review Abhiruchi's PR for Beacon flow
-# "I have reviewed Abhiruchi's PR, found some suggestion, shared with her. She will update it and let me know."
-# Check the NotebookSchema Specification

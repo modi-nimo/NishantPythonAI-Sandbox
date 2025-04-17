@@ -37,6 +37,11 @@ class ThinkSyncManager:
         Extract all actionable items from the following note. Present each action item as clear and concise statement.
         
         Consider the following note and the relevant past notes, identify any new action items that need to be done.
+        Understand the conversation context that is happening over the time, through timestamps and then create a list of action items.
+        
+        Few Acronyms that i use:
+        - US : User Story
+        
         Notes: {self.get_notes()}
         
         Output Format: <list of action items separated by new line>
