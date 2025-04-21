@@ -16,6 +16,7 @@ def get_notes_ui():
     notes = think_sync_manager.get_notes()
     if notes:
         notes_df = pd.DataFrame(notes)
+        notes_df = notes_df.sort_values(by="timestamp", ascending=False)
         notes_df["timestamp"] = pd.to_datetime(notes_df["timestamp"])
         notes_df["timestamp"] = notes_df["timestamp"].dt.strftime("%A, %d %B %Y ") # %I:%M:%S %p
         return gr.Dataframe(notes_df, label="Notes", type="pandas", interactive=False)

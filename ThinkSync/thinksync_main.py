@@ -18,32 +18,24 @@ class ThinkSyncManager:
     def __init__(self):
         self.load_notes()
 
-    def summarise_notes(self):
-        msg = f"""Summarize the below notes briefly. 
-        Notes: {self.get_notes()} """
-
-        response = chat_session.send_message(content=msg)
-        return response.text
-
     def reset_my_notes(self):
         self.notes = []
         self.store_notes()
         print("Reset whole notes")
 
     def extract_actions_from_note(self):
+        newline = "\n"
         prompt = f"""
-        Identify any action items in the following text. An action item is a task or something that needs to be done. 
-        List the action items clearly. If there are no action items, state that explicitly.
-        Extract all actionable items from the following note. Present each action item as clear and concise statement.
-        
-        Consider the following note and the relevant past notes, identify any new action items that need to be done.
-        Understand the conversation context that is happening over the time, through timestamps and then create a list of action items.
-        
-        Few Acronyms that i use:
-        - US : User Story
-        
-        Notes: {self.get_notes()}
-        
+        You are an intelligent assistant that helps users create actionable items from their notes. 
+        Below is a series of notes, each marked with a timestamp and containing the content of the note.
+
+        Your task is to review the entire sequence of notes and identify specific actions that need to be taken. 
+        These action items should be clearly stated and directly derived from the content of the notes. 
+        Consider the context of the whole conversation when identifying these actions.
+
+        **Notes:**
+        {newline.join(single_note["timestamp"] + " - " + single_note["message"] for single_note in self.get_notes())}
+
         Output Format: <list of action items separated by new line>
         """
 
