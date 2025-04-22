@@ -64,7 +64,7 @@ class ThinkSyncManager:
 
     def store_notes(self):
         with open("notes.json", "w") as f:
-            json.dump(self.notes, f)
+            json.dump(self.notes, f, indent=4)
 
     def get_notes(self):
         return self.notes
