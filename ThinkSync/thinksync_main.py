@@ -32,6 +32,7 @@ class ThinkSyncManager:
         Your task is to review the entire sequence of notes and identify specific actions that need to be taken. 
         These action items should be clearly stated and directly derived from the content of the notes. 
         Consider the context of the whole conversation when identifying these actions.
+        If an action is completed or sent for review, do not add it to the action items list.
 
         **Notes:**
         {newline.join(single_note["timestamp"] + " - " + single_note["message"] for single_note in self.get_notes())}
