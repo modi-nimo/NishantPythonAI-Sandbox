@@ -214,3 +214,24 @@ def comment_on_work_item(item_id:int, comment:str, organization, project) -> str
     response = requests.patch(url, auth=auth, headers=headers, json=data)
     res = "Comment added." if response.status_code == 200 else "Failed to add comment. Try again later"
     return res
+
+def get_tasks_linked_to_work_item(work_item_id:int, organization, project) -> list:
+    url = f"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{work_item_id}?$expand=relations&api-version=7.1"
+    response = requests.get(url, auth=auth)
+    data = response.json()
+    tasks = []
+    for relation in data["relations"]:
+        if relation["rel"] == "System.LinkTypes.Hierarchy-Forward":
+            tasks.append(relation["url"].split("/")[-1])
+    return tasks
+
+def run_wiql_query(wiql_query, organization, project):
+    url = f"https://dev.azure.com/{organization}/{project}/_apis/wit/wiql?api-version=7.1"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "query": wiql_query
+    }
+    response = requests.post(url, auth=auth, headers=headers, json=data)
+    return response.json()
