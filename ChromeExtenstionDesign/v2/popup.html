@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voice to Ollama</title>
+  <style>
+    body {
+      width: 350px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    button {
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      width: 100%;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #3367d6;
+    }
+    #feedback {
+      margin-top: 15px;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      min-height: 20px;
+      font-style: italic;
+    }
+    #responseContainer {
+      margin-top: 15px;
+    }
+    #responseHeader {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    #responseBox {
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+      min-height: 100px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Voice to Ollama</h2>
+  <button id="startNavButton">Start Voice Recognition</button>
+  <button id="stopNavButton" disabled>Stop Voice Recognition</button>
+  <div id="feedback">Press "Start Voice Recognition" to begin...</div>
+
+  <div id="responseContainer" style="display: none;">
+    <div id="responseHeader">Ollama Response:</div>
+    <div id="responseBox"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

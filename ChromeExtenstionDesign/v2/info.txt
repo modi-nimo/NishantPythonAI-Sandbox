@@ -1,0 +1,5 @@
+This will convert voice input, convert to text , send it to ollama and whatever response it gets, it will print in popup.
+
+Run below command:
+
+OLLAMA_HOST=0.0.0.0 OLLAMA_ORIGINS=chrome-extension://* ollama serve
