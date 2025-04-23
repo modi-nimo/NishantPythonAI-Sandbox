@@ -84,7 +84,7 @@ def clear_filters(df):
     return "", "", get_notes(), info_html
 
 
-with gr.Blocks(theme=gr.themes.Soft(primary_hue="blue")) as demo:
+with gr.Blocks(theme=gr.themes.Soft(primary_hue="blue"), title="ThinkSync") as demo:
     gr.Markdown("# ThinkSync - Note Taking & Action Item Tracker")
 
     with gr.Row():
