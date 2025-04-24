@@ -344,6 +344,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                     chatbot = gr.Chatbot(
                         [],
                         elem_id="chatbot",
+                        type="messages",
                         height=500,
                         show_copy_button=True,
                         avatar_images=("👤", "🤖")
