@@ -7,8 +7,9 @@ from agno.models.google import Gemini
 from agno.team import Team
 from dotenv import load_dotenv
 
-from TechnicalLeadHelper.helper import get_all_work_items, get_iteration_info, comment_on_work_item, create_task
-from constants import GEMINI_MODEL
+from TechnicalLeadHelper.helper import get_all_work_items, get_iteration_info, comment_on_work_item, create_task, \
+    get_tasks_linked_to_work_item
+from constants import GEMINI_MODEL, LIST_OF_NAMES
 
 load_dotenv()
 
@@ -20,6 +21,28 @@ team = os.environ["TEAM"].replace(" ", "%20")
 
 all_work_items = {}
 
+def get_current_work_items():
+    return all_work_items
+
+def get_tasks_for_all_work_items():
+    for work_item_type , work_items in all_work_items.items():
+        for single_work_item in work_items:
+            id = single_work_item["id"]
+            tasks = get_tasks_linked_to_work_item(id, organization, project)
+            if len(tasks) == 0:
+                if single_work_item.get("assigned_to") in LIST_OF_NAMES:
+                    # create_task(
+                    #     task_title="WM - Develop for " + single_work_item["title"],
+                    #     parent_id=id,
+                    #     organization=organization,
+                    #     project=project,
+                    #     task_description="Placeholder task to log your efforts",
+                    #     task_assigned_to=single_work_item["assigned_to"],
+                    #     iteration=iteration,
+                    #     area=area,
+                    #     original_estimate=str(int(single_work_item["story_points"])*8) if single_work_item.get("story_points") else 8
+                    # )
+                    pass
 
 ##### TOOLS BOX ######
 

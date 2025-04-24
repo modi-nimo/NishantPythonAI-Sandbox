@@ -2,6 +2,7 @@ import os
 from typing import final
 
 import gradio as gr
+import pandas as pd
 import requests
 import gradio as gr
 import os
@@ -10,14 +11,14 @@ from dotenv import load_dotenv
 from vertexai.preview.generative_models import GenerativeModel
 from google.cloud import aiplatform
 
-from TechnicalLeadHelper.technical_lead_main import technical_lead_team, get_all_work_items_for_sprint
-from constants import LIST_OF_NAMES
+from TechnicalLeadHelper.technical_lead_main import technical_lead_team, get_all_work_items_for_sprint, \
+    get_current_work_items, get_tasks_for_all_work_items
+from constants import LIST_OF_NAMES, GEMINI_MODEL
 
 load_dotenv()
 
 # BASE_URL = "http://localhost:8000/"
 history = []
-GEMINI_MODEL = "gemini-2.0-flash"
 if os.environ.get("GOOGLE_API_KEY",None):
     print("Using API Key")
     genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
@@ -25,23 +26,20 @@ if os.environ.get("GOOGLE_API_KEY",None):
 elif os.environ.get("GOOGLE_APPLICATION_CREDENTIALS",None):
     print("Using Project JSON Key")
     aiplatform.init(project=os.environ["PROJECT_NAME"] , location=os.environ["PROJECT_LOCATION"])
-    model = GenerativeModel("gemini-2.0-flash-001")
+    model = GenerativeModel(GEMINI_MODEL)
 else:
     raise ValueError("Please set GOOGLE_API_KEY or GOOGLE_APPLICATION_CREDENTIALS environment variable to use this demo")
 
-chat_session = model.start_chat(history=history)
+chat_session = model.start_chat()
 
 
 def clear_button():
-    history.clear()
     global chat_session
-    chat_session = model.start_chat(history=history)
-
-    return history
+    chat_session = model.start_chat()
+    return []
 
 
 def respond(user_msg, work_item=None):
-
     if work_item is None:
         work_item = {}
     if len(history) == 0:
@@ -98,6 +96,23 @@ def populate_work_items_info(work_item):
 def get_list_of_names():
     return LIST_OF_NAMES
 
+def create_task_for_sprint_init():
+    get_tasks_for_all_work_items()
+
+def get_workitem_dataframe():
+    data = []
+    for item_type, item_info in get_current_work_items().items():
+        for item in item_info:
+            temp_info = {
+                "Story ID": item["id"],
+                "Title": item["title"],
+                "State": item["state"],
+                "Type": item_type,
+                "SP": item.get("story_points", "0"),
+                "Assigned To": item["assigned_to"],
+            }
+            data.append(temp_info)
+    return pd.DataFrame(data, columns=["Story ID", "Title", "State", "Type", "SP", "Assigned To"])
 
 def get_sprint_info(sprint_num):
     print(f"Getting information for sprint number:{sprint_num}")
@@ -110,10 +125,10 @@ def get_sprint_info(sprint_num):
         for type_of_item in data:
             for item in data[type_of_item]:
                 work_items.append((item["title"], item))
-        return gr.Dropdown(choices=work_items)
+        return gr.Dropdown(choices=work_items), get_workitem_dataframe()
     else:
         print(f"Error: {response.status_code}")
-        return gr.Dropdown(choices=[])
+        return gr.Dropdown(choices=[]) , get_workitem_dataframe()
 
 
 # ------------- UI -------------
@@ -128,7 +143,7 @@ with demo:
     )
 
     with gr.Row():
-        sprint_num_dropdown = gr.Dropdown(choices=[None, 1, 2], label="Sprint Number", interactive=True)
+        sprint_num_dropdown = gr.Dropdown(choices=[None, 1, 2, 3, 4, 5, 6, 7, 8], label="Sprint Number", interactive=True)
         work_items_dropdown = gr.Dropdown(choices=[], label="Work Items", interactive=True)
 
     with gr.Row():
@@ -139,7 +154,6 @@ with demo:
         description = gr.Markdown(label="Description")
         description.value = "Description will be populated here"
 
-    sprint_num_dropdown.change(get_sprint_info, inputs=sprint_num_dropdown, outputs=work_items_dropdown)
 
     with gr.Tab("Create Task"):
         no_of_task = gr.Dropdown(choices=list(range(0, 10)), label="Number of Tasks", interactive=True)
@@ -168,4 +182,17 @@ with demo:
         clr = gr.Button("Reset History")
         clr.click(clear_button, None, [chatbot])
 
+    with gr.Tab("PR Review [Use Only On Client VM]"):
+        gr.Markdown("Review Tool here"
+                    )
+
+    with gr.Tab("Sprint Overview"):
+        current_sprint = gr.Dataframe(label="Current Sprint Info", wrap=True,
+                                      show_search="filter")
+
+    sprint_num_dropdown.change(get_sprint_info, inputs=sprint_num_dropdown, outputs=[work_items_dropdown,current_sprint])
+
+    with gr.Tab("One Time Activities"):
+        create_initial_tasks = gr.Button("Create Initial Tasks")
+        create_initial_tasks.click(create_task_for_sprint_init)
 demo.launch()

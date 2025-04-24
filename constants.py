@@ -1,5 +1,5 @@
 GEMINI_MODEL = "gemini-2.0-flash"
-ABHIRUCHI_GULHANE = "Abhiruchi Gulhane"
+ABHIRUCHI_GULHANE = "Gulhane, Abhiruchi"
 NISHANT_MODI = "Nishant Modi"
 NICOLAY_HILARION = "Nicolay Hilarion"
 JULIO_HERRERA = "Julio Herrera"
