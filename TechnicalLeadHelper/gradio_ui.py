@@ -116,7 +116,7 @@ def respond(user_msg: str, work_item_id_title: str = None) -> Tuple[str, List]:
 
 def call_create_task(item_id_title, task_title, task_description, task_assigned_to, original_estimate):
     if not item_id_title:
-        return gr.Button(value="Error: No work item selected", interactive=False, variant="secondary")
+        return gr.update(value="Error: No work item selected", interactive=False, variant="secondary")
 
     try:
         # Extract the item ID from the dropdown string
@@ -128,10 +128,10 @@ def call_create_task(item_id_title, task_title, task_description, task_assigned_
             f"description {task_description}, assigned to {task_assigned_to}, "
             f"original estimate {original_estimate}"
         )
-        return gr.Button(value=f"Task Created: {res.content}", interactive=False, variant="secondary")
+        return gr.update(value=f"Task Created: {res.content}", interactive=False, variant="secondary")
     except (ValueError, IndexError, AttributeError) as e:
         print(f"Error creating task: {e}")
-        return gr.Button(value=f"Error creating task: {str(e)}", interactive=False, variant="secondary")
+        return gr.update(value=f"Error creating task: {str(e)}", interactive=False, variant="secondary")
 
 
 def populate_work_items_info(work_item_id_title):
@@ -223,10 +223,10 @@ def get_sprint_info(sprint_num):
 def create_task_for_sprint_init():
     try:
         get_tasks_for_all_work_items()
-        return gr.Button(value="Tasks Created Successfully!", variant="secondary", interactive=False)
+        return "✅ Tasks initialized successfully!"
     except Exception as e:
         print(f"Error creating initial tasks: {e}")
-        return gr.Button(value=f"Error: {str(e)}", variant="secondary", interactive=False)
+        return f"❌ Error: {str(e)}"
 
 
 def update_task_containers(num_tasks):
@@ -251,6 +251,15 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
         color: #ef4444;
         font-weight: bold;
     }
+    .centered {
+        display: flex;
+        justify-content: center;
+    }
+    .dashboard {
+        padding: 10px;
+        border-radius: 8px;
+        background-color: #f9fafb;
+    }
 """) as demo:
     with gr.Row(elem_classes="header"):
         gr.Markdown("""
@@ -258,90 +267,77 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
         ### Your intelligent assistant for Agile team management
         """)
 
-    # Sprint and Work Item Selection Area
-    with gr.Row(elem_classes="container"):
-        with gr.Column(scale=1):
+    # Sprint Selection
+    with gr.Row():
+        with gr.Column():
             sprint_num_dropdown = gr.Dropdown(
                 choices=[None] + list(range(1, 9)),
                 label="📅 Select Sprint Number",
                 interactive=True,
                 value=None
             )
+            status_message = gr.Markdown("")
+            admin_action = gr.Button("Initialize Tasks for Sprint", variant="primary")
 
-        with gr.Column(scale=2):
-            work_items_dropdown = gr.Dropdown(
-                choices=[],
-                label="📋 Select Work Item",
-                interactive=True,
-                value=None  # Start with no selection to avoid mismatch errors
+            admin_action.click(
+                create_task_for_sprint_init,
+                outputs=status_message
             )
 
-    # Work Item Details Area
-    with gr.Row(elem_classes="container"):
-        with gr.Column(scale=1):
-            with gr.Group():
-                gr.Markdown("### Work Item Details")
-                story_points = gr.Textbox(label="Story Points", interactive=False)
-                assigned_to = gr.Textbox(label="Assigned To", interactive=False)
+    # Sprint Dashboard
+    with gr.Row(elem_classes="dashboard"):
+        current_sprint = gr.DataFrame(
+            value=pd.DataFrame(columns=["Story ID", "Title", "State", "Type", "SP", "Assigned To"]),
+            wrap=True,
+            show_label=False,
+            max_height=300
+        )
 
-        with gr.Column(scale=2):
-            description = gr.Markdown()
-            error_message = gr.Markdown(visible=False, elem_classes="error-msg")
-
-    # Main Tabs Area
+    # Work Item Section
     with gr.Tabs() as tabs:
-        # Tab 1: Create Task
-        with gr.TabItem("🔨 Create Task"):
+        # Combined Work Item Selection and Management Tab
+        with gr.TabItem("📋 Work Item Management"):
             with gr.Row():
-                no_of_task = gr.Dropdown(
-                    choices=list(range(0, 6)),
-                    label="Number of Tasks to Create",
-                    interactive=True,
-                    value=1
-                )
+                # Left column for selection and details
+                with gr.Column(scale=1):
+                    work_items_dropdown = gr.Dropdown(
+                        choices=[],
+                        label="Select Work Item",
+                        interactive=True,
+                        value=None
+                    )
 
-            task_containers = []
-            task_visibilities = []
-            for i in range(5):  # Pre-create UI for up to 5 tasks
-                with gr.Row(visible=(i < 1)) as container:  # By default show only 1 task
-                    task_containers.append(container)
-                    task_visibilities.append(gr.Checkbox(value=(i < 1), visible=False))
+                    with gr.Group():
+                        gr.Markdown("### Details")
+                        story_points = gr.Textbox(label="Story Points", interactive=False)
+                        assigned_to = gr.Textbox(label="Assigned To", interactive=False)
 
-                    with gr.Column(scale=3):
-                        task_title = gr.Textbox(label=f"Task {i + 1} Title", value="WM - Develop")
-                        task_description = gr.Textbox(label="Task Description", value="Develop Placeholder", lines=3)
+                    description = gr.Markdown()
 
-                    with gr.Column(scale=2):
+                # Right column for task creation
+                with gr.Column(scale=1):
+                    gr.Markdown("### Create Task")
+                    task_title = gr.Textbox(label="Task Title", value="WM - Develop")
+                    task_description = gr.Textbox(label="Task Description", value="Develop Placeholder", lines=3)
+
+                    with gr.Row():
                         task_assigned_to = gr.Dropdown(
                             choices=LIST_OF_NAMES,
                             label="Assigned To",
                             value=None
                         )
-                        original_estimate = gr.Textbox(label="Original Estimate (hours)", value="8")
+                        original_estimate = gr.Textbox(label="Hours", value="8")
 
-                    with gr.Column(scale=1):
-                        create_task_button = gr.Button("Create Task", variant="primary")
-                        create_task_button.click(
-                            call_create_task,
-                            inputs=[work_items_dropdown, task_title, task_description, task_assigned_to,
-                                    original_estimate],
-                            outputs=create_task_button
-                        )
+                    create_task_button = gr.Button("Create Task", variant="primary")
+                    task_status = gr.Markdown("")
 
-            no_of_task.change(
-                update_task_containers,
-                inputs=no_of_task,
-                outputs=task_visibilities
-            )
+                    create_task_button.click(
+                        call_create_task,
+                        inputs=[work_items_dropdown, task_title, task_description, task_assigned_to, original_estimate],
+                        outputs=task_status
+                    )
 
-            for i, (visibility, container) in enumerate(zip(task_visibilities, task_containers)):
-                visibility.change(
-                    lambda x: gr.update(visible=x),  # Changed from gr.Row.update to gr.update
-                    inputs=visibility,
-                    outputs=container
-                )
-
-        # Tab 2: Technical Lead Chat
+        # Technical Lead Chat Tab
         with gr.TabItem("💬 Technical Lead Chat"):
             with gr.Row():
                 with gr.Column():
@@ -362,69 +358,40 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                         )
                         send_btn = gr.Button("Send", variant="primary")
 
-                    with gr.Row():
-                        clear_btn = gr.Button("Reset Chat History", variant="secondary")
+                    with gr.Row(elem_classes="centered"):
+                        clear_btn = gr.Button("Reset Chat", variant="secondary")
 
             msg.submit(respond, [msg, work_items_dropdown], [msg, chatbot])
             send_btn.click(respond, [msg, work_items_dropdown], [msg, chatbot])
             clear_btn.click(clear_chat_history, None, [chatbot])
-
-        # Tab 3: PR Review
-        with gr.TabItem("🔍 PR Review [Client VM Only]"):
-            gr.Markdown("""
-            ### Pull Request Review Tool
-
-            This feature is only available when running on the client VM.
-            """)
-
-        # Tab 4: Sprint Overview
-        with gr.TabItem("📊 Sprint Overview"):
-            current_sprint = gr.DataFrame(
-                value=pd.DataFrame(columns=["Story ID", "Title", "State", "Type", "SP", "Assigned To"]),
-                wrap=True,
-                show_label=False,
-                max_height=400
-            )
-
-        # Tab 5: Admin Tasks
-        with gr.TabItem("⚙️ Admin Tasks"):
-            with gr.Row():
-                with gr.Column():
-                    gr.Markdown("### One-Time Administrative Tasks")
-                    create_initial_tasks_btn = gr.Button("Initialize Tasks for Sprint", variant="primary")
-                    task_status = gr.Markdown("")
-
-                    create_initial_tasks_btn.click(
-                        create_task_for_sprint_init,
-                        outputs=create_initial_tasks_btn
-                    )
 
 
     # Connect the components
     def update_sprint_ui(sprint_num):
         # First reset the work items dropdown to prevent value mismatch errors
         items, df = get_sprint_info(sprint_num)
-        return gr.update(choices=items, value=None), df  # Changed from gr.Dropdown.update to gr.update
+        return gr.update(choices=items, value=None), df, ""
 
 
     sprint_num_dropdown.change(
         update_sprint_ui,
         inputs=sprint_num_dropdown,
-        outputs=[work_items_dropdown, current_sprint]
+        outputs=[work_items_dropdown, current_sprint, status_message]
     )
 
 
     # Only populate work item details when a valid selection is made
     def safe_populate_work_items_info(work_item_id_title):
         if not work_item_id_title:
-            return "", "0", "Unassigned", 0
-        return populate_work_items_info(work_item_id_title)
+            return "", "0", "Unassigned"
+        description, points, assignee, _ = populate_work_items_info(work_item_id_title)
+        return description, points, assignee
 
 
     work_items_dropdown.change(
         safe_populate_work_items_info,
         inputs=work_items_dropdown,
-        outputs=[description, story_points, assigned_to, no_of_task]
+        outputs=[description, story_points, assigned_to]
     )
 
 demo.launch()

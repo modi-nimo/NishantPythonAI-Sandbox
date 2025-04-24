@@ -42,7 +42,7 @@ def get_tasks_for_all_work_items():
                     #     area=area,
                     #     original_estimate=str(int(single_work_item["story_points"])*8) if single_work_item.get("story_points") else 8
                     # )
-                    pass
+                    print(single_work_item["id"])
 
 ##### TOOLS BOX ######
 
