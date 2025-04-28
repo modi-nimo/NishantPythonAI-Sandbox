@@ -26,23 +26,27 @@ def get_current_work_items():
 
 def get_tasks_for_all_work_items():
     for work_item_type , work_items in all_work_items.items():
+        print("Creating task for work item type:", work_item_type)
         for single_work_item in work_items:
             id = single_work_item["id"]
             tasks = get_tasks_linked_to_work_item(id, organization, project)
             if len(tasks) == 0:
                 if single_work_item.get("assigned_to") in LIST_OF_NAMES:
-                    # create_task(
-                    #     task_title="WM - Develop for " + single_work_item["title"],
-                    #     parent_id=id,
-                    #     organization=organization,
-                    #     project=project,
-                    #     task_description="Placeholder task to log your efforts",
-                    #     task_assigned_to=single_work_item["assigned_to"],
-                    #     iteration=iteration,
-                    #     area=area,
-                    #     original_estimate=str(int(single_work_item["story_points"])*8) if single_work_item.get("story_points") else 8
-                    # )
+                    res = create_task(
+                        task_title="WM - Develop for " + single_work_item["title"],
+                        parent_id=id,
+                        organization=organization,
+                        project=project,
+                        task_description="Placeholder task to log your efforts",
+                        task_assigned_to=single_work_item["assigned_to"],
+                        iteration=iteration,
+                        area=area,
+                        original_estimate=str(int(single_work_item["story_points"])*8) if single_work_item.get("story_points") else 8
+                    )
+                    print(res)
                     print(single_work_item["id"])
+
+    print("Done For all work items")
 
 ##### TOOLS BOX ######
 

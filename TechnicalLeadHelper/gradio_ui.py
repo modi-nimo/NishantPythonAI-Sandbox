@@ -36,7 +36,7 @@ chat_session = model.start_chat()
 
 # Theme configuration
 theme = gr.themes.Soft(
-    primary_hue="blue",
+    primary_hue="rose",
     secondary_hue="sky",
     neutral_hue="slate",
 ).set(
@@ -173,20 +173,21 @@ def get_workitem_dataframe():
             for item in item_info:
                 temp_info = {
                     "Story ID": item["id"],
+                    "Type": item_type,
                     "Title": item["title"],
                     "State": item["state"],
-                    "Type": item_type,
-                    "SP": item.get("story_points", "0") or "0",  # Handle None value
                     "Assigned To": item["assigned_to"],
+                    "Remaining Work" : int(item.get("remaining_work", "0") or "0") * 8,  # Handle None value
+                    "SP": item.get("story_points", "0") or "0",  # Handle None value
                 }
                 data.append(temp_info)
     except Exception as e:
         print(f"Error getting work item dataframe: {e}")
 
     if not data:
-        return pd.DataFrame(columns=["Story ID", "Title", "State", "Type", "SP", "Assigned To"])
+        return pd.DataFrame(columns=["Story ID", "Type", "Title", "State",  "Assigned To","Remaining Work","SP"])
 
-    return pd.DataFrame(data, columns=["Story ID", "Title", "State", "Type", "SP", "Assigned To"])
+    return pd.DataFrame(data, columns=["Story ID", "Type", "Title", "State",  "Assigned To","Remaining Work","SP"])
 
 
 def get_sprint_info(sprint_num):
@@ -277,7 +278,8 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                 value=None
             )
             status_message = gr.Markdown("")
-            admin_action = gr.Button("Initialize Tasks for Sprint", variant="primary")
+            with gr.Accordion("Admin Actions", open=False):
+                admin_action = gr.Button("Initialize Tasks for Sprint", variant="primary")
 
             admin_action.click(
                 create_task_for_sprint_init,

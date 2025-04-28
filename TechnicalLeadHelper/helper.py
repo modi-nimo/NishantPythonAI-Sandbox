@@ -58,6 +58,10 @@ def get_all_work_items(organization, project, team, iteration_id, types=["User S
             work_item_info["title"] = work_item_details_fields["System.Title"]
 
             work_item_info["state"] = work_item_details_fields["System.State"]
+            if work_item_info["state"] == "New":
+                work_item_info["state"] = "To Do"
+            elif work_item_info["state"] == "Active":
+                work_item_info["state"] = "In Progress"
 
             work_item_info["assigned_to"] = work_item_details_fields.get("System.AssignedTo",
                                                                          {"displayName": "Not Assigned Yet"}).get(
