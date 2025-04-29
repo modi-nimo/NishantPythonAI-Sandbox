@@ -177,17 +177,20 @@ def get_workitem_dataframe():
                     "Title": item["title"],
                     "State": item["state"],
                     "Assigned To": item["assigned_to"],
-                    "Remaining Work" : int(item.get("remaining_work", "0") or "0") * 8,  # Handle None value
-                    "SP": item.get("story_points", "0") or "0",  # Handle None value
+                    "SP": item.get("story_points", "1") or "1",  # Handle None value
+                    "Created Date": item.get("created_date"),
                 }
                 data.append(temp_info)
     except Exception as e:
         print(f"Error getting work item dataframe: {e}")
 
     if not data:
-        return pd.DataFrame(columns=["Story ID", "Type", "Title", "State",  "Assigned To","Remaining Work","SP"])
+        return pd.DataFrame(columns=["Story ID", "Type", "Title", "State",  "Assigned To","SP","Created Date"])
 
-    return pd.DataFrame(data, columns=["Story ID", "Type", "Title", "State",  "Assigned To","Remaining Work","SP"])
+    result_dataframe = pd.DataFrame(data, columns=["Story ID", "Type", "Title", "State",  "Assigned To","SP","Created Date"])
+    result_dataframe = result_dataframe.sort_values(by="Created Date")
+
+    return result_dataframe
 
 
 def get_sprint_info(sprint_num):

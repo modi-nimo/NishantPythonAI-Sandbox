@@ -32,8 +32,10 @@ def extract_message_from_html(_html):
 
 def get_all_work_items(organization, project, team, iteration_id, types=["User Story", "Bug"]):
     print("Getting all work items for iteration id:", iteration_id)
-    dict_of_all_workitems = {"User Story": [],
-                             "Bug": []}  # Key is the type of work item and value is the list of work items
+    dict_of_all_workitems = {
+        "Bug": [],
+        "User Story": []
+    }  # Key is the type of work item and value is the list of work items
 
     url = f"https://dev.azure.com/{organization}/{project}/{team}/_apis/work/teamsettings/iterations/{iteration_id}/workitems?api-version=7.1"
 
@@ -62,12 +64,15 @@ def get_all_work_items(organization, project, team, iteration_id, types=["User S
                 work_item_info["state"] = "To Do"
             elif work_item_info["state"] == "Active":
                 work_item_info["state"] = "In Progress"
+            elif work_item_info["state"] == "Closed":
+                work_item_info["state"] = "Done"
 
             work_item_info["assigned_to"] = work_item_details_fields.get("System.AssignedTo",
                                                                          {"displayName": "Not Assigned Yet"}).get(
                 "displayName")
 
             work_item_info["comments"] = work_item_details_fields.get("System.CommentCount", 0)
+            work_item_info["created_date"] = work_item_details_fields.get("System.CreatedDate", None)
 
             if work_item_type == "Bug":
 
@@ -97,13 +102,15 @@ def get_all_work_items(organization, project, team, iteration_id, types=["User S
                 # work_item_info["description"] = extract_message_from_html(
                 #     work_item_details_fields.get("System.Description", "<p> No Description Defined </p>"))
 
-                work_item_info["description"] = work_item_details_fields.get("System.Description", "<p> No Description Defined </p>")
+                work_item_info["description"] = work_item_details_fields.get("System.Description",
+                                                                             "<p> No Description Defined </p>")
             dict_of_all_workitems[work_item_type].append(work_item_info)
 
     return dict_of_all_workitems
 
 
-def create_task(task_title, parent_id, organization, project, task_description=None, task_assigned_to=None, iteration=None, area=None,
+def create_task(task_title, parent_id, organization, project, task_description=None, task_assigned_to=None,
+                iteration=None, area=None,
                 original_estimate=None):
     print("Creating a task.")
     url = f"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$Task?api-version=7.1"
@@ -202,7 +209,7 @@ def create_task(task_title, parent_id, organization, project, task_description=N
     return response.json()
 
 
-def comment_on_work_item(item_id:int, comment:str, organization, project) -> str:
+def comment_on_work_item(item_id: int, comment: str, organization, project) -> str:
     url = f"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{item_id}?api-version=7.1"
     headers = {
         "Content-Type": "application/json-patch+json"
@@ -219,7 +226,8 @@ def comment_on_work_item(item_id:int, comment:str, organization, project) -> str
     res = "Comment added." if response.status_code == 200 else "Failed to add comment. Try again later"
     return res
 
-def get_tasks_linked_to_work_item(work_item_id:int, organization, project) -> list:
+
+def get_tasks_linked_to_work_item(work_item_id: int, organization, project) -> list:
     url = f"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{work_item_id}?$expand=relations&api-version=7.1"
     response = requests.get(url, auth=auth)
     data = response.json()
@@ -228,6 +236,7 @@ def get_tasks_linked_to_work_item(work_item_id:int, organization, project) -> li
         if relation["rel"] == "System.LinkTypes.Hierarchy-Forward":
             tasks.append(relation["url"].split("/")[-1])
     return tasks
+
 
 def run_wiql_query(wiql_query, organization, project):
     url = f"https://dev.azure.com/{organization}/{project}/_apis/wit/wiql?api-version=7.1"
