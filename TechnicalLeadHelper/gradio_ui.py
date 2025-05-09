@@ -79,9 +79,9 @@ def respond(user_msg: str, work_item_id_title: str = None) -> Tuple[str, List]:
     if len(history) == 0:
         user_story_title = work_item.get("title", "No Title") if work_item else "No Title"
         technical_description = work_item.get("description", "No Description") if work_item else "No Description"
-
+        acceptance_criteria = work_item.get("acceptance_criteria", "No Acceptance Criteria") if work_item else "No Acceptance Criteria"
         technical_prompt = f"""
-        I will give you a task, with its technical description and my thought process. You will act as Expert Technical Lead and help me with my questions. 
+        I will give you a task, with its technical description, acceptance criteria and my thought process. You will act as Expert Technical Lead and help me with making sure the User story is airtight , without any technical flaws or gaps. 
         Going forward, avoid simply agreeing with my points or taking my conclusions at face value. I want a real intellectual challenge, not just affirmation. Whenever I ask a question, or mention something or clarify something, do this:
 
         - Question my assumptions: What am I treating as true that might be questionable?
@@ -90,12 +90,19 @@ def respond(user_msg: str, work_item_id_title: str = None) -> Tuple[str, List]:
         - Suggest alternative angles: How else might the idea be viewed, interpreted, or challenged?
         - Focus on accuracy over agreement: If my argument is weak or wrong, correct me plainly and show me how.
         - Stay Constructive but Rigorous: You are not here to argue for argument's sake, but to sharpen my thinking and keep me honest. Let's refine both our conclusions and how we reach them.
+        
+        Some Accronyms you might need to know:
+        - US: User Story
+        - WM - Wingman ( Name of our application )
 
         User Story Title: {user_story_title}
 
         Technical Description: 
         {technical_description}
 
+        Acceptance Criteria:
+        {acceptance_criteria}
+        
         My Thought Process:
         {user_msg}
         """
