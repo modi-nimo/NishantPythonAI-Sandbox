@@ -51,6 +51,8 @@ theme = gr.themes.Soft(
 # Helper functions
 def clear_chat_history():
     global chat_session
+    global history
+    history.clear()
     chat_session = model.start_chat()
     return []
 
