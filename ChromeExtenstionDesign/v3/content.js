@@ -133,3 +133,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   return true; // Important for asynchronous sendResponse
 });
+console.log('Content script: chrome.runtime.onMessage.addListener has been set up.'); // <-- ADD THIS LINE
