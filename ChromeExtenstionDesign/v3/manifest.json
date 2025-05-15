@@ -1,15 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "Voice to Ollama",
-  "version": "1.2",
-  "description": "Transcribes voice, sends to Ollama, and shows response in console.",
+  "name": "Voice to Ollama Web Control",
+  "version": "1.3",
+  "description": "Uses voice commands, processed by Ollama, to interact with web pages.",
   "permissions": [
-    "microphone",
     "activeTab",
     "tabs"
   ],
   "host_permissions": [
-    "http://localhost:*/"
+    "http://localhost:11434/"
   ],
   "action": {
     "default_popup": "popup.html"
