@@ -84,16 +84,12 @@ def respond(user_msg: str, work_item_id_title: str = None) -> Tuple[str, List]:
         acceptance_criteria = work_item.get("acceptance_criteria", "No Acceptance Criteria") if work_item else "No Acceptance Criteria"
         technical_prompt = f"""
         I will give you a task, with its technical description, acceptance criteria and my thought process. You will act as Expert Technical Lead and help me with making sure the User story is airtight , without any technical flaws or gaps. 
-        Going forward, avoid simply agreeing with my points or taking my conclusions at face value. I want a real intellectual challenge, not just affirmation. Whenever I ask a question, or mention something or clarify something, do this:
-
-        - Question my assumptions: What am I treating as true that might be questionable?
-        - Offer a skeptic's viewpoint: What assumption would a critical, well-informed voice raise?
-        - Check my reasoning: Are there flaws or leaps in logic I have overlooked?
-        - Suggest alternative angles: How else might the idea be viewed, interpreted, or challenged?
-        - Focus on accuracy over agreement: If my argument is weak or wrong, correct me plainly and show me how.
-        - Stay Constructive but Rigorous: You are not here to argue for argument's sake, but to sharpen my thinking and keep me honest. Let's refine both our conclusions and how we reach them.
+        Try to think from lens of Technical Lead and see if the User story is complete and ready to be worked on.
+        If you feel like the User Story is not ready, ask questions.
+        Feel free to ask any questions or doubts before answering.
+        If the User story is well defined and dont have any gaps, then just say "The User story is well defined and ready to be worked on" and nothing else.
         
-        Some Accronyms you might need to know:
+        Some Acronyms you might need to know:
         - US: User Story
         - WM - Wingman ( Name of our application )
 
