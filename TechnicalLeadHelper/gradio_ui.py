@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import pandas as pd
 import gradio as gr
 import google.generativeai as genai
+import requests
 from dotenv import load_dotenv
 from vertexai.preview.generative_models import GenerativeModel
 from google.cloud import aiplatform
@@ -241,6 +242,16 @@ def create_task_for_sprint_init():
 def update_task_containers(num_tasks):
     return [i < num_tasks for i in range(5)]
 
+def update_status_via_slack(work_item, status):
+    print(work_item)
+    print(status)
+    url = os.getenv("SLACK_WEBHOOK_URL")
+    data = {
+        "message": status,
+        "id": work_item.split()[0].strip()
+    }
+    requests.post(url,json=data)
+    return ""
 
 # Main UI
 with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
@@ -295,16 +306,31 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
             )
 
     # Sprint Dashboard
-    with gr.Row(elem_classes="dashboard"):
-        current_sprint = gr.DataFrame(
-            value=pd.DataFrame(columns=["Story ID", "Title", "State", "Type", "SP", "Assigned To"]),
-            wrap=True,
-            show_label=False,
-            max_height=300
-        )
+    with gr.Accordion("🏠 Sprint Dashboard", open=False):
+        with gr.Row(elem_classes="dashboard"):
+            current_sprint = gr.DataFrame(
+                value=pd.DataFrame(columns=["Story ID", "Title", "State", "Type", "SP", "Assigned To"]),
+                wrap=True,
+                show_label=False,
+                max_height=300
+            )
 
     # Work Item Section
     with gr.Tabs() as tabs:
+        # Update Status
+        with gr.TabItem("📊 Update Status"):
+            with gr.Row():
+                with gr.Column(scale=1):
+                    update_item_dropdown = gr.Dropdown(
+                        choices=[],
+                        label="Select Work Item",
+                        interactive=True,
+                        value=None
+                    )
+                    update_status = gr.Textbox(label="Update Status", submit_btn=True)
+                    update_status.submit(update_status_via_slack, inputs=[update_item_dropdown, update_status],
+                                         outputs=update_status)
+
         # Combined Work Item Selection and Management Tab
         with gr.TabItem("📋 Work Item Management"):
             with gr.Row():
@@ -381,13 +407,13 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
     def update_sprint_ui(sprint_num):
         # First reset the work items dropdown to prevent value mismatch errors
         items, df = get_sprint_info(sprint_num)
-        return gr.update(choices=items, value=None), df, ""
+        return gr.update(choices=items, value=None),gr.update(choices=items, value=None), df, ""
 
 
     sprint_num_dropdown.change(
         update_sprint_ui,
         inputs=sprint_num_dropdown,
-        outputs=[work_items_dropdown, current_sprint, status_message]
+        outputs=[work_items_dropdown,update_item_dropdown, current_sprint, status_message]
     )
 
 
