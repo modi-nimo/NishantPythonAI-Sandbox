@@ -9,3 +9,9 @@ It contains all my code that I write for Python + GenAI experimentation.
 
 3. Technical Lead Helper
     - This will help me with my daily work as a technical lead.
+
+To Create:
+- AI Voice based customer support
+- Real time observing agent
+- A2A communication / MCP communication agents
+- SmolVM experiment
