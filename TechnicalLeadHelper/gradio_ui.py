@@ -195,6 +195,7 @@ def get_workitem_dataframe():
 
     result_dataframe = pd.DataFrame(data, columns=["Story ID", "Type", "Title", "State",  "Assigned To","SP","Created Date"])
     result_dataframe = result_dataframe.sort_values(by="Created Date")
+    result_dataframe.drop("Created Date", axis=1, inplace=True)
 
     return result_dataframe
 
@@ -245,7 +246,7 @@ def update_task_containers(num_tasks):
 def update_status_via_slack(work_item, status):
     print(work_item)
     print(status)
-    url = os.getenv("SLACK_WEBHOOK_URL")
+    url = os.getenv("WINGMAN_UPDATE_STATUS_SLACK_URL")
     data = {
         "message": status,
         "id": work_item.split()[0].strip()
@@ -312,6 +313,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                 value=pd.DataFrame(columns=["Story ID", "Title", "State", "Type", "SP", "Assigned To"]),
                 wrap=True,
                 show_label=False,
+                show_copy_button=True,
                 max_height=300
             )
 
