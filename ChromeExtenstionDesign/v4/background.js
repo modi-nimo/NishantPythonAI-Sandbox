@@ -31,6 +31,7 @@ chrome.runtime.onConnect.addListener(function(port) {
 
         let ollamaAction;
         try {
+          // Attempt to parse the JSON string from Ollama
           ollamaAction = JSON.parse(ollamaResponseString);
         } catch (e) {
           console.error('Failed to parse Ollama JSON response:', e);
@@ -100,7 +101,6 @@ async function executePageAction(actionDetails, tabId) {
       }
       break;
     case 'scroll':
-      // New support for scrolling
       chrome.tabs.sendMessage(tabId, {
         action: "performScroll",
         direction: actionDetails.direction || 'down',
@@ -114,7 +114,6 @@ async function executePageAction(actionDetails, tabId) {
       });
       break;
     case 'sequence':
-      // New support for multi-step sequences
       if (Array.isArray(actionDetails.actions) && actionDetails.actions.length > 0) {
         chrome.tabs.sendMessage(tabId, {
           action: "performSequence",
@@ -132,8 +131,13 @@ async function executePageAction(actionDetails, tabId) {
       break;
     case 'navigate':
       if (actionDetails.url) {
-        chrome.tabs.update(tabId, { url: actionDetails.url });
-        console.log('Navigating to:', actionDetails.url);
+        let url = actionDetails.url;
+        // Basic URL normalization: add https:// if missing
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          url = 'https://' + url;
+        }
+        chrome.tabs.update(tabId, { url: url });
+        console.log('Navigating to:', url);
       } else {
         console.error("Missing URL for navigate action", actionDetails);
       }
@@ -217,6 +221,21 @@ Output ONLY a JSON object with one of the following structures:
      "amount": "end",
      "reasoning": "User wants to scroll to the bottom of the page."
    }
+    Example for "Scroll up":
+   {
+     "action": "scroll",
+     "direction": "up",
+     "amount": "medium",
+     "reasoning": "User wants to scroll up the page."
+   }
+    Example for "Go to top":
+   {
+     "action": "scroll",
+     "direction": "toposition",
+     "amount": "top",
+     "reasoning": "User wants to scroll to the top of the page."
+   }
+
 
 4. For multi-step sequences (like "click the button and then type in the search box"):
    {
@@ -237,11 +256,17 @@ Output ONLY a JSON object with one of the following structures:
      "reasoning": "User wants to perform a multi-step action. First clicking, then typing."
    }
 
-5. For navigating to a new URL:
+5. For navigating to a new URL (e.g., "open google.com", "go to wikipedia"):
    {
      "action": "navigate",
      "url": "FULL_URL_TO_NAVIGATE_TO",
      "reasoning": "Brief explanation."
+   }
+   Example for "open google.com":
+   {
+     "action": "navigate",
+     "url": "google.com",
+     "reasoning": "User wants to open Google."
    }
 
 6. For going back or forward in history:
@@ -263,7 +288,8 @@ Output ONLY a JSON object with one of the following structures:
 
 Important considerations:
 - Provide BOTH selector and element_text_match when possible to maximize chances of finding the right element
-- For scrolling commands, parse phrases like "scroll down", "scroll to bottom", "scroll to top", etc.
+- For scrolling commands, parse phrases like "scroll down", "scroll up", "scroll to bottom", "scroll to top", etc.
+- For navigate commands, extract the website name and format it as a URL (e.g., "google.com" from "open google.com").
 - For multi-step sequences, include appropriate delays between actions (in milliseconds)
 - Ensure the JSON output is valid and contains ONLY the JSON object.
 
@@ -292,24 +318,30 @@ JSON Response:
     const data = await response.json();
     // Ollama sometimes wraps the JSON in its response field, sometimes not when format: "json" is used.
     // And sometimes it might still return a string that needs parsing.
+    // The most reliable is to expect data.response to be a string containing JSON.
     if (typeof data.response === 'string') {
+       // Attempt to parse the string content of data.response
         try {
-            // Attempt to parse if it's a stringified JSON
-            JSON.parse(data.response);
+            JSON.parse(data.response); // Just validate it's parseable JSON
             return data.response; // Return the stringified JSON
         } catch (e) {
-            // If parsing fails, it might be a non-JSON string or malformed.
-            console.warn("Ollama response was a string but not valid JSON. Returning as is.", data.response);
-            return data.response; // Or handle as an error
+            console.warn("Ollama response.response was a string but not valid JSON. Returning raw response.", data.response);
+             // If it's not valid JSON, return the raw text for debugging,
+             // but the parsing in the caller will likely fail.
+             // You might want to return an error structure here instead.
+            return data.response;
         }
-    } else if (typeof data.response === 'object') {
-        return JSON.stringify(data.response); // Stringify if it's already an object
+    } else if (typeof data === 'object' && data !== null) {
+        // If data itself is the JSON object (less common for /api/generate but possible)
+         console.log("Ollama response was a direct JSON object.", data);
+         return JSON.stringify(data); // Stringify the object
+    } else {
+        // Handle unexpected response format
+        const errorMsg = "Ollama returned an unexpected format.";
+        console.error(errorMsg, data);
+        throw new Error(errorMsg);
     }
-    // If format: "json" works perfectly, data itself might be the JSON object.
-    // However, the /api/generate endpoint usually has a "response" field.
-    // The most reliable is to expect data.response to be a string containing JSON.
-    // Let's assume data.response is the string containing JSON.
-    return data.response;
+
 
   } catch (error) {
     console.error('Error calling Ollama:', error);

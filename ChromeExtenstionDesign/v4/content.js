@@ -159,20 +159,30 @@ function performSequence(actions) {
         case 'click':
           actionPromise = new Promise(resolveAction => {
             const response = handleClickAction(action);
-            setTimeout(() => resolveAction(response), action.delay || 500);
+            // Check if handleClickAction returned a Promise (due to scrolling)
+            if (response instanceof Promise) {
+              response.then(resolveAction).catch(resolveAction); // Resolve sequence promise on action completion/failure
+            } else {
+              setTimeout(() => resolveAction(response), action.delay || 500);
+            }
           });
           break;
         case 'type':
         case 'type_and_submit':
           actionPromise = new Promise(resolveAction => {
             const response = handleTypeAction(action);
-            setTimeout(() => resolveAction(response), action.delay || 500);
+             // Check if handleTypeAction returned a Promise (due to scrolling)
+            if (response instanceof Promise) {
+              response.then(resolveAction).catch(resolveAction); // Resolve sequence promise on action completion/failure
+            } else {
+              setTimeout(() => resolveAction(response), action.delay || 500);
+            }
           });
           break;
         case 'scroll':
           actionPromise = new Promise(resolveAction => {
             const response = performScroll(action.direction, action.amount);
-            setTimeout(() => resolveAction(response), action.delay || 1000);
+            setTimeout(() => resolveAction({ success: response }), action.delay || 1000); // performScroll returns boolean, wrap in success object
           });
           break;
         case 'wait':
@@ -186,12 +196,14 @@ function performSequence(actions) {
 
       actionPromise.then(result => {
         console.log(`Action ${index + 1} result:`, result);
-        if (result.success || action.continueOnError) {
+        // Continue sequence even if an action fails, unless continueOnError is explicitly false
+        if (result.success || action.continueOnError !== false) {
           executeNextAction(index + 1);
         } else {
           reject({ error: `Action ${index + 1} failed: ${result.error || 'Unknown error'}`, failedAt: index });
         }
       }).catch(error => {
+        // Catch unexpected exceptions during action execution
         reject({ error: `Exception in action ${index + 1}: ${error.message}`, failedAt: index });
       });
     };
@@ -199,6 +211,7 @@ function performSequence(actions) {
     executeNextAction(0);
   });
 }
+
 
 // Handle click actions (used by both direct and sequence calls)
 function handleClickAction(options) {
@@ -244,7 +257,7 @@ function handleClickAction(options) {
               error: `Error clicking element: ${e.message}`
             });
           }
-        }, 500);
+        }, 500); // Delay after scroll
       });
     }
 
@@ -298,7 +311,74 @@ function handleTypeAction(options) {
       if (!isElementInViewport(inputElement)) {
         inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         // Small delay for scroll
-        setTimeout(() => {}, 500);
+        return new Promise(resolve => {
+           setTimeout(() => {
+             console.log(`Typing "${options.text}" into:`, inputElement);
+
+             // Focus the element first
+             inputElement.focus();
+
+             // For contenteditable, set innerHTML
+             if (inputElement.getAttribute('contenteditable') === 'true') {
+               inputElement.innerHTML = options.text;
+             } else {
+               // For regular input/textarea
+               inputElement.value = options.text;
+             }
+
+             // Dispatch input and change events to simulate user typing
+             inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+             inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+
+             // Handle submission if needed
+             if (options.type === 'type_and_submit') {
+               let submitted = false;
+               let form = inputElement.form;
+
+               if (options.submit_selector) {
+                 try {
+                   const submitButton = document.querySelector(options.submit_selector);
+                   if (submitButton) {
+                     console.log('Clicking explicit submit button:', submitButton);
+                     submitButton.click();
+                     submitted = true;
+                   } else {
+                     console.warn(`Specified submit_selector "${options.submit_selector}" not found.`);
+                   }
+                 } catch (e) {
+                   console.warn(`Invalid submit_selector: ${options.submit_selector}`, e);
+                 }
+               }
+
+               if (!submitted && form) {
+                 console.log('Submitting form:', form);
+                 // Check for a submit button within the form
+                 const submitButtonInForm = form.querySelector('input[type="submit"], button[type="submit"]');
+                 if (submitButtonInForm) {
+                   submitButtonInForm.click();
+                 } else {
+                   form.requestSubmit ? form.requestSubmit() : form.submit();
+                 }
+                 submitted = true;
+               } else if (!submitted) {
+                 // If no form, try Enter key
+                 console.log('No form or explicit submit, trying Enter key press on input.');
+                 inputElement.dispatchEvent(new KeyboardEvent('keydown', {
+                   key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true
+                 }));
+                 inputElement.dispatchEvent(new KeyboardEvent('keyup', {
+                   key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true
+                 }));
+
+                 // Some SPAs might listen for 'submit' on the input itself or a parent div
+                 inputElement.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                 submitted = true;
+               }
+             }
+
+             resolve({ success: true, message: `Typed "${options.text}" and ${options.type === 'type_and_submit' ? 'attempted submit.' : 'completed typing.'}` });
+           }, 500); // Delay after scroll
+        });
       }
 
       console.log(`Typing "${options.text}" into:`, inputElement);
@@ -406,7 +486,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       ...request,
       type: 'type_and_submit'
     };
-    sendResponse(handleTypeAction(options));
+     const result = handleTypeAction(options);
+     // If the result is a promise (like when we scroll before typing)
+     if (result instanceof Promise) {
+       result.then(sendResponse);
+       return true; // Indicates async response
+     }
+    sendResponse(result);
     return true;
   }
 
