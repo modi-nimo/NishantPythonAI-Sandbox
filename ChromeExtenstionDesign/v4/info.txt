@@ -1,4 +1,5 @@
-This will convert voice input, convert to text , send it to ollama and whatever response it gets, it will print in popup.
+This will convert voice input, convert to text, perform the action in browser.
+There is a list of commands that can be used on the extension.
 
 Run below command:
 
