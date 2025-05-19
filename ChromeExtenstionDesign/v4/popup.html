@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voice to Ollama</title>
+  <style>
+    body {
+      width: 380px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    button {
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      width: 100%;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #3367d6;
+    }
+    #feedback {
+      margin-top: 15px;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      min-height: 20px;
+      font-style: italic;
+      word-wrap: break-word;
+    }
+    #responseContainer {
+      margin-top: 15px;
+    }
+    #responseHeader {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    #responseBox {
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+      min-height: 100px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap; /* Ensures JSON formatting is respected */
+      font-family: 'Courier New', Courier, monospace; /* Better for JSON */
+      font-size: 13px;
+    }
+    #commandSuggestions {
+      margin-top: 15px;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 10px;
+    }
+    .cmdSuggestion {
+      display: inline-block;
+      margin: 5px;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      background-color: #f0f0f0;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .cmdSuggestion:hover {
+      background-color: #e0e0e0;
+    }
+    .statusIndicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 5px;
+      border-radius: 50%;
+      background-color: #cccccc;
+    }
+    .statusIndicator.active {
+      background-color: #4CAF50;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Voice to Ollama Web Control</h2>
+  <button id="startNavButton"><span id="micIndicator" class="statusIndicator"></span>Start Voice Command</button>
+  <button id="stopNavButton" disabled>Stop Listening</button>
+  <div id="feedback">Press "Start Voice Command" to begin...</div>
+
+  <div id="responseContainer" style="display: none;">
+    <div id="responseHeader">Ollama Action Plan:</div>
+    <div id="responseBox"></div>
+  </div>
+
+  <div id="commandSuggestions">
+    <div class="cmdSuggestion">scroll to bottom</div>
+    <div class="cmdSuggestion">scroll down</div>
+    <div class="cmdSuggestion">click on [text]</div>
+    <div class="cmdSuggestion">search for [term]</div>
+    <div class="cmdSuggestion">go back</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

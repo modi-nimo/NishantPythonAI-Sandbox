@@ -15,3 +15,4 @@ To Create:
 - Real time observing agent
 - A2A communication / MCP communication agents
 - SmolVM experiment
+- Explore https://ollama.com/blog/multimodal-models

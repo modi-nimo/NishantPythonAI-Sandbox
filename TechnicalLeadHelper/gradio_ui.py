@@ -119,6 +119,25 @@ def respond(user_msg: str, work_item_id_title: str = None) -> Tuple[str, List]:
             history[-1]["content"] += chunk.candidates[0].content.parts[0].text
         yield "", history
 
+def get_status_from_transcript(transcript_file):
+    if not transcript_file:
+        return "No file uploaded", ""
+
+    try:
+        with open(transcript_file.name, 'r') as file:
+            transcript = file.read()
+
+        # Process the transcript to extract work item and status
+        lines = transcript.splitlines()
+        work_item = lines[0].strip() if lines else ""
+        status = lines[1].strip() if len(lines) > 1 else ""
+
+        # Update the status via Slack
+        update_status_via_slack(work_item, status)
+        return f"Status updated for {work_item} to {status}", ""
+    except Exception as e:
+        print(f"Error processing transcript: {e}")
+        return f"Error processing transcript: {str(e)}", ""
 
 def call_create_task(item_id_title, task_title, task_description, task_assigned_to, original_estimate):
     if not item_id_title:
@@ -332,6 +351,14 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                     update_status = gr.Textbox(label="Update Status", submit_btn=True)
                     update_status.submit(update_status_via_slack, inputs=[update_item_dropdown, update_status],
                                          outputs=update_status)
+
+        with gr.TabItem("📊 Update Status Via Transcript"):
+            with gr.Row():
+                with gr.Column(scale=1):
+                    status_markdown = gr.Markdown("")
+                    upload_transcript = gr.File(label="Upload Transcript", file_types=[".txt"])
+                    upload_transcript_button = gr.Button("Upload Transcript", variant="primary")
+                    upload_transcript_button.click(get_status_from_transcript,inputs=[upload_transcript],outputs=[status_markdown])
 
         # Combined Work Item Selection and Management Tab
         with gr.TabItem("📋 Work Item Management"):
