@@ -5,8 +5,11 @@ import gradio as gr
 import google.generativeai as genai
 import requests
 from dotenv import load_dotenv
-from vertexai.preview.generative_models import GenerativeModel
+from google import genai
+from google.genai import types
 from google.cloud import aiplatform
+from google.genai.types import GenerateContentConfig
+from pydantic import BaseModel
 
 from TechnicalLeadHelper.technical_lead_main import (
     technical_lead_team,
@@ -23,17 +26,15 @@ load_dotenv()
 history = []
 if os.environ.get("GOOGLE_API_KEY", None):
     print("Using API Key")
-    genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel(GEMINI_MODEL)
+    model = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
 elif os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None):
     print("Using Project JSON Key")
-    aiplatform.init(project=os.environ["PROJECT_NAME"], location=os.environ["PROJECT_LOCATION"])
-    model = GenerativeModel(GEMINI_MODEL)
+    model = genai.Client(project=os.environ["PROJECT_NAME"], location=os.environ["PROJECT_LOCATION"], vertexai=True)
 else:
     raise ValueError(
         "Please set GOOGLE_API_KEY or GOOGLE_APPLICATION_CREDENTIALS environment variable to use this demo")
 
-chat_session = model.start_chat()
+chat_session = model.chats.create(model=GEMINI_MODEL)
 
 # Theme configuration
 theme = gr.themes.Soft(
@@ -44,6 +45,9 @@ theme = gr.themes.Soft(
     button_primary_background_fill="*primary_500",
     button_primary_background_fill_hover="*primary_600",
     button_primary_text_color="white",
+    button_secondary_background_fill="*secondary_500",
+    button_secondary_background_fill_hover="*secondary_600",
+    button_secondary_text_color="white",
     block_label_background_fill="*neutral_50",
     block_label_text_color="*neutral_700",
 )
@@ -54,7 +58,7 @@ def clear_chat_history():
     global chat_session
     global history
     history.clear()
-    chat_session = model.start_chat()
+    chat_session = model.chats.create(model=GEMINI_MODEL)
     return []
 
 
@@ -112,29 +116,42 @@ def respond(user_msg: str, work_item_id_title: str = None) -> Tuple[str, List]:
     history.append({"role": "user", "content": user_msg})
     history.append({"role": "assistant", "content": ""})
 
-    response = chat_session.send_message(content=final_msg, stream=True)
+    response = chat_session.send_message_stream(final_msg)
 
     for chunk in response:
         if len(chunk.candidates) > 0:
             history[-1]["content"] += chunk.candidates[0].content.parts[0].text
         yield "", history
 
-def get_status_from_transcript(transcript_file):
-    if not transcript_file:
-        return "No file uploaded", ""
+def get_status_from_transcript(work_items, transcript_file):
 
     try:
         with open(transcript_file.name, 'r') as file:
             transcript = file.read()
+        my_work_items = work_items[["Story ID","Title"]]
+        prompt = f""" You are a Scrum Master and you are reading a transcript of a meeting, in which every team member is giving their daily status update.
+        You need to extract the status update of each team member and about which user story it is. 
+        You will be given list of work items, with there IDs and the transcript of meeting. 
+        Do not give me unnecessary information, just give me the status update of each team member and about which user story it is, in mentioned output format.
+        
+        Output Format:
+        {{[{{"Story ID": <Story ID>,"Title": <Title>, "Status": <Status Update>}}]}}
+        
+        Work Items: 
+        {my_work_items}
+        
+        Transcript: 
+        {transcript}
+        
+        """
 
-        # Process the transcript to extract work item and status
-        lines = transcript.splitlines()
-        work_item = lines[0].strip() if lines else ""
-        status = lines[1].strip() if len(lines) > 1 else ""
+        temp_chat_session = model.chats.create(model=GEMINI_MODEL)
+        response = temp_chat_session.send_message(prompt,config=GenerateContentConfig(response_mime_type="application/json")) # response_schema=list[TASKS],
+        status = response.text
+        status = eval(status)
 
-        # Update the status via Slack
-        update_status_via_slack(work_item, status)
-        return f"Status updated for {work_item} to {status}", ""
+        result = pd.DataFrame(status, columns=["Story ID", "Title","Status"])
+        return result , None
     except Exception as e:
         print(f"Error processing transcript: {e}")
         return f"Error processing transcript: {str(e)}", ""
@@ -262,6 +279,13 @@ def create_task_for_sprint_init():
 def update_task_containers(num_tasks):
     return [i < num_tasks for i in range(5)]
 
+def update_status_via_transcript(work_item_dataframe: pd.DataFrame):
+    for single_item in work_item_dataframe.iterrows():
+        work_item = single_item[1]["Story ID"]
+        status = single_item[1]["Status"]
+        update_status_via_slack(work_item, status)
+    return None
+
 def update_status_via_slack(work_item, status):
     print(work_item)
     print(status)
@@ -355,10 +379,15 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
         with gr.TabItem("📊 Update Status Via Transcript"):
             with gr.Row():
                 with gr.Column(scale=1):
-                    status_markdown = gr.Markdown("")
+                    status_markdown = gr.DataFrame(value=pd.DataFrame(columns=["Story ID", "Title","Status"]), interactive=True, wrap=True,
+                show_label=False,
+                show_copy_button=True,
+                max_height=300)
                     upload_transcript = gr.File(label="Upload Transcript", file_types=[".txt"])
                     upload_transcript_button = gr.Button("Upload Transcript", variant="primary")
-                    upload_transcript_button.click(get_status_from_transcript,inputs=[upload_transcript],outputs=[status_markdown])
+                    upload_transcript_button.click(get_status_from_transcript,inputs=[current_sprint,upload_transcript],outputs=[status_markdown, upload_transcript])
+                    update_status_button = gr.Button("Update Status", variant="secondary")
+                    update_status_button.click(update_status_via_transcript, inputs=[status_markdown], outputs=[status_markdown])
 
         # Combined Work Item Selection and Management Tab
         with gr.TabItem("📋 Work Item Management"):
