@@ -1,15 +1,11 @@
 import os
-from typing import Dict, List, Optional, Tuple, Union
-import pandas as pd
+
 import gradio as gr
-import google.generativeai as genai
+import pandas as pd
 import requests
 from dotenv import load_dotenv
 from google import genai
-from google.genai import types
-from google.cloud import aiplatform
 from google.genai.types import GenerateContentConfig
-from pydantic import BaseModel
 
 from TechnicalLeadHelper.technical_lead_main import (
     technical_lead_team,
@@ -62,7 +58,7 @@ def clear_chat_history():
     return []
 
 
-def respond(user_msg: str, work_item_id_title: str = None) -> Tuple[str, List]:
+def respond(user_msg: str, work_item_id_title: str = None):
     work_item = None
 
     # Find the work item based on id-title string
@@ -156,7 +152,7 @@ def get_status_from_transcript(work_items, transcript_file):
         print(f"Error processing transcript: {e}")
         return f"Error processing transcript: {str(e)}", ""
 
-def call_create_task(item_id_title, task_title, task_description, task_assigned_to, original_estimate):
+def call_create_task(item_id_title, _task_title, _task_description, _task_assigned_to, _original_estimate):
     if not item_id_title:
         return gr.update(value="Error: No work item selected", interactive=False, variant="secondary")
 
@@ -166,9 +162,9 @@ def call_create_task(item_id_title, task_title, task_description, task_assigned_
         item_id = int(item_id)
 
         res = technical_lead_team.run(
-            f"Create a Task for {item_id} User story, with title {task_title}, "
-            f"description {task_description}, assigned to {task_assigned_to}, "
-            f"original estimate {original_estimate}"
+            f"Create a Task for {item_id} User story, with title {_task_title}, "
+            f"description {_task_description}, assigned to {_task_assigned_to}, "
+            f"original estimate {_original_estimate}"
         )
         return gr.update(value=f"Task Created: {res.content}", interactive=False, variant="secondary")
     except (ValueError, IndexError, AttributeError) as e:
@@ -338,7 +334,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                 choices=[None] + list(range(1, 9)),
                 label="📅 Select Sprint Number",
                 interactive=True,
-                value=None
+                value=""
             )
             status_message = gr.Markdown("")
             with gr.Accordion("Admin Actions", open=False):
@@ -370,7 +366,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                         choices=[],
                         label="Select Work Item",
                         interactive=True,
-                        value=None
+                        value=""
                     )
                     update_status = gr.Textbox(label="Update Status", submit_btn=True)
                     update_status.submit(update_status_via_slack, inputs=[update_item_dropdown, update_status],
@@ -398,7 +394,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                         choices=[],
                         label="Select Work Item",
                         interactive=True,
-                        value=None
+                        value=""
                     )
 
                     with gr.Group():
@@ -418,7 +414,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                         task_assigned_to = gr.Dropdown(
                             choices=LIST_OF_NAMES,
                             label="Assigned To",
-                            value=None
+                            value="Unassigned",
                         )
                         original_estimate = gr.Textbox(label="Hours", value="8")
 
@@ -479,8 +475,8 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
     def safe_populate_work_items_info(work_item_id_title):
         if not work_item_id_title:
             return "", "0", "Unassigned"
-        description, points, assignee, _ = populate_work_items_info(work_item_id_title)
-        return description, points, assignee
+        _description, points, assignee, _ = populate_work_items_info(work_item_id_title)
+        return _description, points, assignee
 
 
     work_items_dropdown.change(
