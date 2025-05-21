@@ -214,10 +214,10 @@ def get_status_from_transcript(work_item_dataframe: pd.DataFrame, transcript_fil
 def call_create_task_ui(item_id_title: str | None, task_title: str, task_description: str, task_assigned_to: str, original_estimate: str):
     """Handles task creation from the UI."""
     if not item_id_title:
-        return gr.update(value="Error: No work item selected", interactive=False, variant="secondary")
+        return "Error: No work item selected"
 
     if not ORGANIZATION or not PROJECT:
-         return gr.update(value="Error: Azure DevOps configuration missing.", interactive=False, variant="secondary")
+         return "Error: Azure DevOps configuration missing."
 
     try:
         item_id = int(item_id_title.split(" - ")[0].strip())
@@ -237,16 +237,16 @@ def call_create_task_ui(item_id_title: str | None, task_title: str, task_descrip
         )
 
         if res and res.get("id"):
-            return gr.update(value=f"Task Created successfully with ID: {res['id']}", interactive=False, variant="secondary")
+            return f"Task Created successfully with ID: {res['id']}"
         else:
-             return gr.update(value=f"Failed to create task. API response: {res}", interactive=False, variant="secondary")
+             return f"Failed to create task. API response: {res}"
 
     except (ValueError, IndexError, AttributeError) as e:
         print(f"Error creating task: {e}")
-        return gr.update(value=f"Error creating task: Invalid input or API issue - {str(e)}", interactive=False, variant="secondary")
+        return f"Error creating task: Invalid input or API issue - {str(e)}"
     except Exception as e:
         print(f"Unexpected error creating task: {e}")
-        return gr.update(value=f"Unexpected error creating task: {str(e)}", interactive=False, variant="secondary")
+        return f"Unexpected error creating task: {str(e)}"
 
 
 def populate_work_items_info_ui(work_item_id_title: str | None):
