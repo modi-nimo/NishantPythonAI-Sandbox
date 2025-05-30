@@ -113,10 +113,10 @@ def respond(user_msg: str, chatbot_history: list, work_item_id_title: str = None
         # Use extract_message_from_html for display purposes if needed, but raw for AI input
         technical_description = work_item.get("description", "No Description") if work_item else "No Description"
         acceptance_criteria = work_item.get("acceptance_criteria", "No Acceptance Criteria") if work_item else "No Acceptance Criteria"
-
+        known_information = """ """
         technical_prompt = f"""
         You are an Expert Technical Lead. I will provide details about a User Story (US) and my thought process. Your goal is to ensure the US is technically sound, complete, and ready for development. Identify any technical flaws, gaps, or unanswered questions.
-
+        Note: The application is already in production,many of the underlying implementations are already done, so focus on technical aspects rather than business logic.
         If the US is well-defined, state "The User story is well defined and ready to be worked on" and nothing else. Otherwise, ask specific questions or point out areas needing clarification.
 
         Acronyms:
@@ -133,6 +133,9 @@ def respond(user_msg: str, chatbot_history: list, work_item_id_title: str = None
 
         My Thought Process:
         {user_msg}
+        
+        Already Known Information:
+        {known_information}
         """
         final_msg = technical_prompt
     else:
@@ -150,13 +153,10 @@ def respond(user_msg: str, chatbot_history: list, work_item_id_title: str = None
             if len(chunk.candidates) > 0:
                 chatbot_history[-1]["content"] += chunk.candidates[0].content.parts[0].text
             yield "", chatbot_history # Yield empty message and updated history
-            return None
-        return None
     except Exception as e:
         print(f"Error during AI response generation: {e}")
         chatbot_history[-1]["content"] = f"Error generating response: {str(e)}"
         yield "", chatbot_history # Yield error message
-        return None
 
 
 def get_status_from_transcript(work_item_dataframe: pd.DataFrame, transcript_file):
@@ -319,7 +319,7 @@ def get_sprint_info_ui(sprint_num: str | None):
     work_item_dropdown_choices = []
     df = get_workitem_dataframe() # Get empty/current dataframe
 
-    if not sprint_num:
+    if sprint_num is None:
         print("No sprint number provided")
         return work_item_dropdown_choices, work_item_dropdown_choices, df, "" # Return empty choices and dataframe
 
@@ -541,7 +541,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
     with gr.Row():
         with gr.Column():
             sprint_num_dropdown = gr.Dropdown(
-                choices=[None] + list(range(1, 9)), # Assuming sprints 1-8
+                choices=[None] + list(range(0, 7)), # Assuming sprints 0-6
                 label="📅 Select Sprint Number",
                 interactive=True,
                 value=None # Start with no sprint selected

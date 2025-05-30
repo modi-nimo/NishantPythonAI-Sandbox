@@ -15,7 +15,7 @@ vertexai~=1.71.1
 google-cloud-aiplatform~=1.71.1
 google-generativeai
 google-genai
-agno~=1.2.6
+agno
 groq~=0.21.0
 chromadb~=1.0.4
 pandas~=2.2.3
