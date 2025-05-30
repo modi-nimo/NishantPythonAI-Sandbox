@@ -356,13 +356,13 @@ def get_sprint_info_ui(sprint_num: str | None):
         df = get_workitem_dataframe() # Generate dataframe from fetched data
 
         print(f"Returning {len(work_item_dropdown_choices)} work items for sprint {sprint_num}")
-        return gr.update(choices=work_item_dropdown_choices), gr.update(choices=work_item_dropdown_choices),gr.update(choices=work_item_dropdown_choices), df, f"Successfully loaded sprint {sprint_num}."
+        return gr.update(choices=work_item_dropdown_choices), df, f"Successfully loaded sprint {sprint_num}."
 
     except ValueError:
-        return work_item_dropdown_choices, work_item_dropdown_choices,work_item_dropdown_choices, df, "Invalid sprint number."
+        return work_item_dropdown_choices, df, "Invalid sprint number."
     except Exception as e:
         print(f"Error getting sprint info: {e}")
-        return work_item_dropdown_choices, work_item_dropdown_choices,work_item_dropdown_choices, df, f"An unexpected error occurred: {str(e)}"
+        return work_item_dropdown_choices,  df, f"An unexpected error occurred: {str(e)}"
 
 
 def create_task_for_sprint_init_ui():
@@ -543,7 +543,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
         with gr.Column():
             sprint_num_dropdown = gr.Dropdown(
                 choices=[None] + list(range(0, 7)), # Assuming sprints 0-6
-                label="📅 Select Sprint Number",
+                label="📅 Sprint Number",
                 interactive=True,
                 value=None # Start with no sprint selected
             )
@@ -566,37 +566,34 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                 show_copy_button=True,
                 max_height=300
             )
-
+    work_item_dropdown = gr.Dropdown(
+        choices=[],  # Populated by sprint selection
+        label="Work Item",
+        interactive=True,
+        value=None
+    )
     # Work Item Section
     with gr.Tabs() as tabs:
         # Update Status via Manual Input
-        with gr.TabItem("📊 Update Status (Manual)"):
+        with gr.TabItem("📊 Update Status"):
             with gr.Row():
-                with gr.Column(scale=1):
-                    update_item_dropdown = gr.Dropdown(
-                        choices=[], # Populated by sprint selection
-                        label="Select Work Item",
-                        interactive=True,
-                        value=None
-                    )
-                    update_status_textbox = gr.Textbox(label="Status Update (for Slack/Comment)", lines=2, submit_btn=True)
-                    update_status_button = gr.Button("Update Status", variant="primary")
+                with gr.Accordion("Manual Status Update", open=True):
+                    with gr.Column(scale=1):
+                        update_status_textbox = gr.Textbox(label="Status Update (for Slack/Comment)", lines=2, submit_btn=True)
+                        update_status_button = gr.Button("Update Status", variant="primary")
 
-                    update_status_button.click(
-                        update_status_via_slack_ui, # Call Slack update function
-                        inputs=[update_item_dropdown, update_status_textbox],
-                        outputs=[status_message,update_status_textbox] # Use the main status message area
-                    )
-                    update_status_textbox.submit( # Allow submitting with Enter key
-                         update_status_via_slack_ui,
-                         inputs=[update_item_dropdown, update_status_textbox],
-                         outputs=[status_message,update_status_textbox]
-                    )
+                        update_status_button.click(
+                            update_status_via_slack_ui, # Call Slack update function
+                            inputs=[work_item_dropdown, update_status_textbox],
+                            outputs=[status_message,update_status_textbox] # Use the main status message area
+                        )
+                        update_status_textbox.submit( # Allow submitting with Enter key
+                             update_status_via_slack_ui,
+                             inputs=[work_item_dropdown, update_status_textbox],
+                             outputs=[status_message,update_status_textbox]
+                        )
 
-
-        # Update Status Via Transcript
-        with gr.TabItem("📊 Update Status Via Transcript"):
-            with gr.Row():
+            with gr.Accordion("Transcript Status Update", open=False):
                 with gr.Column(scale=1):
                     status_transcript_df = gr.DataFrame(
                         value=pd.DataFrame(columns=["Story ID", "Title","Status"]),
@@ -627,12 +624,6 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
             with gr.Row():
                 # Left column for selection and details
                 with gr.Column(scale=1):
-                    work_items_dropdown = gr.Dropdown(
-                        choices=[], # Populated by sprint selection
-                        label="Select Work Item",
-                        interactive=True,
-                        value=None # Start with no item selected
-                    )
 
                     with gr.Group():
                         gr.Markdown("### Details")
@@ -661,7 +652,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
 
                     create_task_button.click(
                         call_create_task_ui,
-                        inputs=[work_items_dropdown, task_title_input, task_description_input, task_assigned_to_dropdown, original_estimate_input],
+                        inputs=[work_item_dropdown, task_title_input, task_description_input, task_assigned_to_dropdown, original_estimate_input],
                         outputs=task_status_message
                     )
 
@@ -669,12 +660,6 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
         with gr.TabItem("💬 Technical Lead Chat"):
             with gr.Row():
                 with gr.Column():
-                    work_items_dropdown_for_technical_chat = gr.Dropdown(
-                        choices=[],  # Populated by sprint selection
-                        label="Select Work Item",
-                        interactive=True,
-                        value=None  # Start with no item selected
-                    )
                     chatbot = gr.Chatbot(
                         [],
                         elem_id="chatbot",
@@ -701,8 +686,8 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                         clear_btn = gr.Button("Reset Chat", variant="secondary")
 
             # Chat interactions
-            msg_input.submit(respond, [msg_input, chatbot, work_items_dropdown_for_technical_chat,known_information], [msg_input, chatbot])
-            send_btn.click(respond, [msg_input, chatbot, work_items_dropdown_for_technical_chat,known_information], [msg_input, chatbot])
+            msg_input.submit(respond, [msg_input, chatbot, work_item_dropdown,known_information], [msg_input, chatbot])
+            send_btn.click(respond, [msg_input, chatbot, work_item_dropdown,known_information], [msg_input, chatbot])
             clear_btn.click(clear_chat_history, None, [chatbot])
 
 
@@ -712,13 +697,13 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
     sprint_num_dropdown.change(
         get_sprint_info_ui,
         inputs=sprint_num_dropdown,
-        outputs=[work_items_dropdown, update_item_dropdown,work_items_dropdown_for_technical_chat, current_sprint_df, status_message]
+        outputs=[work_item_dropdown,  current_sprint_df, status_message]
     )
 
     # Update work item details when a work item is selected in the dropdown
-    work_items_dropdown.change(
+    work_item_dropdown.change(
         populate_work_items_info_ui,
-        inputs=work_items_dropdown,
+        inputs=work_item_dropdown,
         outputs=[description_display, story_points_display, assigned_to_display]
     )
 
