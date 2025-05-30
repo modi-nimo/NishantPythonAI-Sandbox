@@ -1,6 +1,8 @@
 # --- START OF FILE gradio_ui.py ---
 import os
 import json # Import json for parsing the status response
+import random
+
 import gradio as gr
 import pandas as pd
 import requests
@@ -91,7 +93,7 @@ def get_work_item_by_id(item_id: int) -> dict | None:
                 return item
     return None
 
-def respond(user_msg: str, chatbot_history: list, work_item_id_title: str = None):
+def respond(user_msg: str, chatbot_history: list, work_item_id_title: str = None,known_information:str = None):
     """Handles the chat interaction with the AI model."""
     if not model or not chat_session:
         chatbot_history.append([user_msg, "AI model not initialized. Please check server logs."])
@@ -113,7 +115,6 @@ def respond(user_msg: str, chatbot_history: list, work_item_id_title: str = None
         # Use extract_message_from_html for display purposes if needed, but raw for AI input
         technical_description = work_item.get("description", "No Description") if work_item else "No Description"
         acceptance_criteria = work_item.get("acceptance_criteria", "No Acceptance Criteria") if work_item else "No Acceptance Criteria"
-        known_information = """ """
         technical_prompt = f"""
         You are an Expert Technical Lead. I will provide details about a User Story (US) and my thought process. Your goal is to ensure the US is technically sound, complete, and ready for development. Identify any technical flaws, gaps, or unanswered questions.
         Note: The application is already in production,many of the underlying implementations are already done, so focus on technical aspects rather than business logic.
@@ -134,9 +135,9 @@ def respond(user_msg: str, chatbot_history: list, work_item_id_title: str = None
         My Thought Process:
         {user_msg}
         
-        Already Known Information:
-        {known_information}
         """
+        if known_information:
+            technical_prompt += f"\nKnown Information:\n{known_information}\n"
         final_msg = technical_prompt
     else:
         final_msg = user_msg # For subsequent turns, just use the user's message
@@ -355,13 +356,13 @@ def get_sprint_info_ui(sprint_num: str | None):
         df = get_workitem_dataframe() # Generate dataframe from fetched data
 
         print(f"Returning {len(work_item_dropdown_choices)} work items for sprint {sprint_num}")
-        return gr.update(choices=work_item_dropdown_choices), gr.update(choices=work_item_dropdown_choices), df, f"Successfully loaded sprint {sprint_num}."
+        return gr.update(choices=work_item_dropdown_choices), gr.update(choices=work_item_dropdown_choices),gr.update(choices=work_item_dropdown_choices), df, f"Successfully loaded sprint {sprint_num}."
 
     except ValueError:
-        return work_item_dropdown_choices, work_item_dropdown_choices, df, "Invalid sprint number."
+        return work_item_dropdown_choices, work_item_dropdown_choices,work_item_dropdown_choices, df, "Invalid sprint number."
     except Exception as e:
         print(f"Error getting sprint info: {e}")
-        return work_item_dropdown_choices, work_item_dropdown_choices, df, f"An unexpected error occurred: {str(e)}"
+        return work_item_dropdown_choices, work_item_dropdown_choices,work_item_dropdown_choices, df, f"An unexpected error occurred: {str(e)}"
 
 
 def create_task_for_sprint_init_ui():
@@ -668,30 +669,40 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
         with gr.TabItem("💬 Technical Lead Chat"):
             with gr.Row():
                 with gr.Column():
+                    work_items_dropdown_for_technical_chat = gr.Dropdown(
+                        choices=[],  # Populated by sprint selection
+                        label="Select Work Item",
+                        interactive=True,
+                        value=None  # Start with no item selected
+                    )
                     chatbot = gr.Chatbot(
                         [],
                         elem_id="chatbot",
                         type="messages",
                         height=500,
                         show_copy_button=True,
-                        avatar_images=("👤", "🤖")
+                        avatar_images=("../Icons/user.png", "../" + random.choice(["bot1.png","bot2.png", "bot3.png"]))  # Randomly select bot avatar
                     )
 
-                    with gr.Row():
-                        msg_input = gr.Textbox(
-                            label="Share your thoughts with the Technical Lead",
-                            placeholder="Type your message here...",
-                            lines=3,
-                            show_label=False
-                        )
-                        send_btn = gr.Button("Send", variant="primary")
+            with gr.Row():
+                with gr.Column():
+                    msg_input = gr.Textbox(
+                        label="Share your thoughts with the Technical Lead",
+                        placeholder="Type your message here...",
+                        lines=3,
+                        show_label=False
+                    )
+
+                    with gr.Accordion(label="Known Information", open=False):
+                        known_information = gr.Textbox(label="Known Information", lines=3, interactive=True, placeholder="Add any known information here (Applicable only if you are starting the conversation, not for in-between conversation) ...")
+                    send_btn = gr.Button("Send", variant="primary")
 
                     with gr.Row(elem_classes="centered"):
                         clear_btn = gr.Button("Reset Chat", variant="secondary")
 
             # Chat interactions
-            msg_input.submit(respond, [msg_input, chatbot, work_items_dropdown], [msg_input, chatbot])
-            send_btn.click(respond, [msg_input, chatbot, work_items_dropdown], [msg_input, chatbot])
+            msg_input.submit(respond, [msg_input, chatbot, work_items_dropdown_for_technical_chat,known_information], [msg_input, chatbot])
+            send_btn.click(respond, [msg_input, chatbot, work_items_dropdown_for_technical_chat,known_information], [msg_input, chatbot])
             clear_btn.click(clear_chat_history, None, [chatbot])
 
 
@@ -701,7 +712,7 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
     sprint_num_dropdown.change(
         get_sprint_info_ui,
         inputs=sprint_num_dropdown,
-        outputs=[work_items_dropdown, update_item_dropdown, current_sprint_df, status_message]
+        outputs=[work_items_dropdown, update_item_dropdown,work_items_dropdown_for_technical_chat, current_sprint_df, status_message]
     )
 
     # Update work item details when a work item is selected in the dropdown
