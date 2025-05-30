@@ -33,7 +33,7 @@ ITERATION_BASE_PATH = os.environ.get("ITERATION", "")
 AREA_PATH = os.environ.get("AREA", "")
 WINGMAN_UPDATE_STATUS_SLACK_URL = os.environ.get("WINGMAN_UPDATE_STATUS_SLACK_URL")
 
-if not all([ORGANIZATION, PROJECT, TEAM, ITERATION_BASE_PATH, AREA_PATH]):
+if not all([ORGANIZATION, PROJECT, TEAM, ITERATION_BASE_PATH, AREA_PATH, WINGMAN_UPDATE_STATUS_SLACK_URL]):
     raise ValueError("Missing required environment variables for Azure DevOps.")
 
 # --- Global State ---
@@ -564,7 +564,8 @@ with gr.Blocks(theme=theme, title="AI Scrum Master", css="""
                 wrap=True,
                 show_label=False,
                 show_copy_button=True,
-                max_height=300
+                max_height=300,
+                show_search="search"
             )
     work_item_dropdown = gr.Dropdown(
         choices=[],  # Populated by sprint selection
