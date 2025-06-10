@@ -2,6 +2,7 @@
 import os
 import json # Import json for parsing the status response
 import random
+import time
 
 import gradio as gr
 import pandas as pd
@@ -396,6 +397,9 @@ def create_task_for_sprint_init_ui():
             if tasks:
                 print(f"Tasks already exist for work item {item_id}. Skipping.")
                 continue
+            if work_item_type == "Bug":
+                print(f"Skipping task creation for Bug {item_id} as per current logic.")
+                continue
 
             # Determine original estimate
             original_estimate = 8 # Default estimate
@@ -405,9 +409,6 @@ def create_task_for_sprint_init_ui():
                 except (ValueError, TypeError):
                     print(f"Warning: Could not parse story points '{story_points}' for item {item_id}. Using default estimate.")
                     original_estimate = 8
-            elif work_item_type == "Bug":
-                 # You might have a different default or logic for bugs
-                 original_estimate = single_work_item.get("original_estimate", 8)
 
 
             # Create the task
@@ -468,6 +469,7 @@ def update_status_via_transcript_ui(work_item_dataframe: pd.DataFrame):
             update_status_via_slack_ui(str(item_id),status_comment)
             print(f"Updated status for work item {item_id}")
             success_count += 1
+            time.sleep(2)  # Sleep to avoid hitting API rate limits
         else:
             print(f"Skipping work item {item_id} due to empty status.")
             # Decide if this should count as a failure or just a skip
