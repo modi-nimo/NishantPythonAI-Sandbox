@@ -489,7 +489,7 @@ def update_status_via_slack_ui(work_item_id_title: str | None, status: str):
     try:
         item_id = int(work_item_id_title.split(" - ")[0].strip())
         data = {
-            "message": status,
+            "message": f"{str(item_id)} - {status}",
             "id": str(item_id) # Ensure ID is a string for the payload
         }
         response = requests.post(WINGMAN_UPDATE_STATUS_SLACK_URL, json=data)
