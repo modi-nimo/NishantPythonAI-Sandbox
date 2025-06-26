@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensorium Ganpati Mandal Receipt</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for more appealing typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Playfair+Display:wght@700&family=Tillana:wght@600&display=swap" rel="stylesheet">
+    <!-- html2canvas for converting HTML to Canvas/Image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF for generating PDF from the Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Generate Ganpati Mandal Receipt</h1>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="nameInput">Donor Name:</label>
+                <input type="text" id="nameInput" placeholder="Enter Donor Name">
+            </div>
+            <div class="input-group">
+                <label for="amountInput">Amount (₹):</label>
+                <input type="number" id="amountInput" placeholder="Enter Amount" min="0">
+            </div>
+            <div class="input-group">
+                <label for="dateInput">Date:</label>
+                <input type="date" id="dateInput">
+            </div>
+            <!-- NEW: Input for Receipt Number -->
+            <div class="input-group">
+                <label for="receiptNoInput">Receipt No.:</label>
+                <input type="number" id="receiptNoInput" placeholder="Auto-generated, can override" min="1">
+            </div>
+            <!-- NEW: Input for Collector Name -->
+            <div class="input-group">
+                <label for="collectorNameInput">Collector Name:</label>
+                <input type="text" id="collectorNameInput" placeholder="Enter Collector's Name">
+            </div>
+
+            <button id="generateBtn">Generate Receipt</button>
+            <button id="downloadPdfBtn" disabled>Download PDF</button>
+            <button id="downloadImageBtn" disabled>Save as Image</button>
+        </div>
+
+        <div id="receipt-container">
+            <!-- Top decorative corners (CSS generated) -->
+            <div class="corner-decoration top-left"></div>
+            <div class="corner-decoration top-right"></div>
+            <div class="corner-decoration bottom-left"></div>
+            <div class="corner-decoration bottom-right"></div>
+
+            <!-- This is the top "orange" border area -->
+            <div class="receipt-top-border-area">
+                <span class="receipt-no">No. <span id="receipt-no-val">_______</span></span>
+                <span class="receipt-year">Year - First • 2025</span>
+                <span class="receipt-date">Date: <span id="receipt-date-val"></span></span>
+            </div>
+
+            <div class="receipt-main-title">
+                SENSORIUM GANPATI MANDAL
+            </div>
+
+            <div class="receipt-details">
+                <div class="details-left">
+                    <p>Shri / Shrimati: <span id="receipt-name-val">.................................</span></p>
+                    <p>Address: <span class="fixed-address">Sensorium by Joyville Society.</span></p>
+                    <p>Donation amount: <span id="receipt-amount-val">.................................</span></p>
+                    <p class="received-thanks">Received with thanks.</p>
+                </div>
+                <div class="details-right">
+                    <p class="amount-thanks">Amount: <span id="receipt-amount-text"></span> (Rupees) With thanks.</p>
+                </div>
+            </div>
+
+            <div class="receipt-rupee-box">
+                <span class="rupee-symbol">₹</span>
+                <div class="rupee-amount-box"></div>
+            </div>
+
+            <div class="receipt-footer">
+                <div class="footer-column">
+                    <p><strong>President:</strong></p>
+                    <p>Shri Pulak Dutta</p>
+                    <p>Shri Agradweep Roy</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>Joint Secretary:</strong></p>
+                    <p>Shri Kartik Sen</p>
+                    <p>Shri Surajit Mondal</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>Assistant Secretary:</strong></p>
+                    <p>Shri Sanatan Das</p>
+                    <p>Shri Tapas Ray</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>Treasurer:</strong></p>
+                    <p>Shri Samir Dutta</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>Assistant Treasurer:</strong></p>
+                    <p>Munmun Roy</p>
+                    <p>Dipak Dutta</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>Collector:</strong></p>
+                    <!-- NEW: Span with ID for Collector Name -->
+                    <p class="collector-signature-line"><span id="collector-name-val">___________________</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+body {
+    font-family: 'Open Sans', Arial, sans-serif; /* Changed to Open Sans as a cleaner default */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f4f4;
+    margin: 20px;
+    color: #333;
+}
+
+.container {
+    width: 100%;
+    max-width: 1000px;
+    background-color: #fff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
+    border-radius: 10px; /* Slightly more rounded */
+    padding: 25px; /* Increased padding */
+    box-sizing: border-box;
+}
+
+h1 {
+    text-align: center;
+    color: #0056b3;
+    margin-bottom: 25px; /* Increased margin */
+    font-family: 'Playfair Display', serif; /* Elegant serif for main heading */
+    font-size: 2.2em; /* Slightly larger */
+}
+
+.input-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Increased gap */
+    margin-bottom: 40px; /* Increased margin */
+    padding: 20px; /* Increased padding */
+    border: 1px solid #e0e0e0; /* Lighter border */
+    border-radius: 8px; /* Slightly more rounded */
+    background-color: #fcfcfc; /* Lighter background */
+    justify-content: center;
+    align-items: flex-end;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle inner shadow */
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 220px; /* Increased min-width */
+}
+
+.input-group label {
+    margin-bottom: 8px; /* Increased margin */
+    font-weight: bold;
+    color: #555;
+    font-size: 1.1em; /* Slightly larger label text */
+}
+
+.input-section input[type="text"],
+.input-section input[type="number"],
+.input-section input[type="date"] {
+    padding: 12px; /* Increased padding */
+    border: 1px solid #bbb; /* Slightly darker border for input fields */
+    border-radius: 6px; /* More rounded input fields */
+    font-size: 17px; /* Slightly larger font */
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+}
+
+.input-section input[type="text"]:focus,
+.input-section input[type="number"]:focus,
+.input-section input[type="date"]:focus {
+    border-color: #007bff; /* Highlight on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none; /* Remove default outline */
+}
+
+.input-section button {
+    padding: 12px 25px; /* Increased padding */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px; /* More rounded buttons */
+    cursor: pointer;
+    font-size: 17px; /* Slightly larger font */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    align-self: flex-end;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle button shadow */
+}
+
+.input-section button:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px); /* Slight lift effect */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25); /* Enhanced shadow on hover */
+}
+
+.input-section button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* --- Receipt Styling --- */
+#receipt-container {
+    width: 900px;
+    height: 550px;
+    background-color: #FFFDE7; /* A warmer, more traditional cream */
+    position: relative;
+    overflow: hidden;
+    border: 5px solid #FFD700; /* Richer gold for outer border */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); /* Stronger, more elegant shadow */
+    margin: 40px auto;
+
+    /* Ganesh Main Image on Left */
+    background-image: url('ganpati_main.png');
+    background-repeat: no-repeat;
+    background-position: 50px 80px;
+    background-size: 350px auto;
+    /* Adding subtle glow to main Ganesha image */
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+}
+
+/* Faded Ganesha in background on the right - now a more distinct watermark */
+#receipt-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0px;
+    transform: translateY(-50%) translateX(20%);
+    width: 500px;
+    height: 500px;
+    background-image: url('ganpati_main.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    opacity: 0.08; /* Slightly less opaque for a true watermark feel */
+    z-index: 0;
+    /* Optional: Apply a tint to the watermark if desired */
+    /* filter: grayscale(100%) brightness(1.2) sepia(0.5) hue-rotate(-20deg); */
+    filter: sepia(0.5) hue-rotate(-20deg) brightness(1.1) grayscale(0.5); /* A subtle old-paper sepia effect */
+}
+
+/* --- Decorative Corner Elements (Pure CSS) --- */
+.corner-decoration {
+    position: absolute;
+    width: 30px; /* Size of the corner element */
+    height: 30px;
+    border: 3px solid #DAA520; /* Gold color */
+    z-index: 2; /* Ensure it's above other elements */
+}
+
+.top-left {
+    top: -3px; /* Adjust to align with main border */
+    left: -3px;
+    border-right: none;
+    border-bottom: none;
+    border-top-left-radius: 10px; /* Match container border radius */
+}
+
+.top-right {
+    top: -3px;
+    right: -3px;
+    border-left: none;
+    border-bottom: none;
+    border-top-right-radius: 10px;
+}
+
+.bottom-left {
+    bottom: -3px;
+    left: -3px;
+    border-right: none;
+    border-top: none;
+    border-bottom-left-radius: 10px;
+}
+
+.bottom-right {
+    bottom: -3px;
+    right: -3px;
+    border-left: none;
+    border-top: none;
+    border-bottom-right-radius: 10px;
+}
+/* You could replace these with background-image for actual intricate motifs: */
+/* .top-left { background-image: url('path/to/top-left-motif.png'); background-size: contain; background-repeat: no-repeat; width: 50px; height: 50px; } */
+
+
+/* Top decorative border area (now includes receipt number and date) */
+.receipt-top-border-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45px; /* Slightly taller */
+    /* Replaced simple gradient with a more patterned look using repeating linear gradient */
+    background-image: repeating-linear-gradient(
+        45deg,
+        #FFD700, /* Gold */
+        #FFD700 8px,
+        #DAA520 8px, /* Darker Gold */
+        #DAA520 16px
+    );
+    /* For a truly elaborate floral border, you'd use a background-image with a repeating pattern: */
+    /* background-image: url('path/to/floral-border-pattern.png'); */
+    /* background-size: auto 100%; background-repeat: repeat-x; */
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 25px; /* Increased padding */
+    box-sizing: border-box;
+    font-size: 15px; /* Slightly larger font */
+    color: #4B0082; /* Indigo for a richer, more spiritual feel */
+    font-weight: bold;
+    z-index: 1;
+    border-bottom: 2px solid #DAA520; /* A subtle separation line */
+}
+
+.receipt-no, .receipt-year, .receipt-date {
+    font-family: 'Merriweather', serif; /* Use serif font for these details */
+    font-size: 1.05em; /* Slightly emphasize */
+}
+
+
+.receipt-main-title {
+    position: absolute;
+    top: 45px;
+    width: 100%;
+    text-align: center;
+    font-family: 'Tillana', cursive; /* A festive, calligraphic font */
+    font-size: 44px; /* Larger and more impactful */
+    font-weight: bold;
+    color: #F8B300; /* Gold/Yellow */
+    text-shadow: 3px 3px 6px rgba(139, 0, 0, 0.8), -1px -1px 2px rgba(255,255,255,0.5); /* Stronger red shadow + subtle white highlight for outline effect */
+    z-index: 1;
+}
+
+.receipt-details {
+    position: absolute;
+    top: 230px;
+    left: 450px;
+    width: calc(100% - 480px);
+    color: #333;
+    font-size: 17px; /* Slightly larger text */
+    line-height: 2; /* Increased line height for better readability */
+    z-index: 1;
+    font-family: 'Merriweather', serif; /* Consistent serif font */
+}
+
+.details-left {
+    float: left;
+    width: 65%; /* Adjusted width */
+}
+
+.details-right {
+    float: right;
+    width: 35%; /* Adjusted width */
+    text-align: right;
+    margin-top: 90px; /* Adjusted vertical alignment for amount */
+    padding-right: 25px; /* Increased padding */
+}
+
+.details-left p, .details-right p {
+    margin: 5px 0; /* Slightly more vertical spacing */
+    white-space: nowrap;
+}
+
+.details-left span, .details-right span {
+    border-bottom: 1px dotted #666; /* Slightly darker dotted line */
+    padding-bottom: 2px;
+}
+
+.fixed-address {
+    border-bottom: none !important;
+    white-space: normal !important;
+    display: inline-block;
+    padding-bottom: 0 !important;
+    font-style: italic; /* Subtle italic for fixed address */
+    color: #555; /* Slightly less prominent color */
+}
+
+
+.received-thanks, .amount-thanks {
+    font-weight: bold;
+    color: #8B0000; /* Deep red for emphasis */
+    margin-top: 20px; /* More spacing */
+    font-size: 1.1em; /* Emphasize thanks messages */
+}
+
+.receipt-rupee-box {
+    position: absolute;
+    bottom: 90px;
+    left: 60px;
+    display: flex;
+    align-items: center;
+    z-index: 1;
+}
+
+.rupee-symbol {
+    font-family: 'Playfair Display', serif; /* Use an elegant font for the symbol */
+    font-size: 45px; /* Larger symbol */
+    font-weight: bold;
+    color: #4B0082; /* Indigo color */
+    margin-right: 15px; /* More space */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Subtle shadow */
+}
+
+.rupee-amount-box {
+    border: 2px solid #DAA520; /* Gold border */
+    width: 180px; /* Wider box */
+    height: 45px; /* Taller box */
+    background-color: #FFFDE7; /* Match receipt background for a seamless look */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px; /* Larger amount font */
+    font-weight: bold;
+    color: #4B0082; /* Indigo for the amount */
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
+    border-radius: 5px; /* Slightly rounded corners */
+}
+
+.receipt-footer {
+    position: absolute;
+    bottom: 0; /* Changed from 10px to 0 for a solid band */
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 20px; /* Increased padding */
+    background-color: #8B0000; /* Dark Red bottom band */
+    color: white;
+    font-size: 13px; /* Slightly larger font */
+    text-align: center;
+    box-sizing: border-box;
+    z-index: 1;
+    /* Optional: Add a subtle texture or pattern to the footer band */
+    /* background-image: linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px); */
+    /* background-size: 100% 3px; */
+}
+
+.footer-column {
+    flex: 1;
+    padding: 0 8px; /* More padding */
+}
+
+.footer-column p {
+    margin: 3px 0; /* More spacing */
+    line-height: 1.4; /* Better line spacing */
+}
+
+.collector-signature-line span {
+    border-bottom: 1px solid #fff; /* Solid white line for collector */
+    padding-bottom: 2px;
+    display: inline-block; /* Ensure it takes full width for the line */
+    width: 90%; /* Adjust as needed */
+    margin-top: 5px; /* Space above line */
+    font-size: 0.9em; /* Smaller font for text beneath line */
+    color: rgba(255, 255, 255, 0.8);
+}
+
+
+/* Adjustments for responsiveness of the input section */
+@media (max-width: 768px) {
+    .input-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .input-section button {
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    /* Receipt adjustments for smaller screens, though it's fixed size for printing */
+    #receipt-container {
+        width: 100%; /* Allows it to shrink, though fixed pixel size is better for print */
+        height: auto; /* Allow height to adjust if elements wrap */
+        max-width: 900px;
+    }
+}
