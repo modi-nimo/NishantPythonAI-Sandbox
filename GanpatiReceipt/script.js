@@ -2,8 +2,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameInput = document.getElementById('nameInput');
     const amountInput = document.getElementById('amountInput');
     const dateInput = document.getElementById('dateInput');
-    const receiptNoInput = document.getElementById('receiptNoInput'); // NEW: Receipt No input
-    const collectorNameInput = document.getElementById('collectorNameInput'); // NEW: Collector Name input
+    const receiptNoInput = document.getElementById('receiptNoInput');
+    const flatNoInput = document.getElementById('flatNoInput');
+    const numMembersInput = document.getElementById('numMembersInput');
+    const contactNoInput = document.getElementById('contactNoInput'); // NEW
+    const collectorNameInput = document.getElementById('collectorNameInput');
+    const collectorFlatNoInput = document.getElementById('collectorFlatNoInput');
 
     const generateBtn = document.getElementById('generateBtn');
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
@@ -11,11 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const receiptNameVal = document.getElementById('receipt-name-val');
     const receiptAmountVal = document.getElementById('receipt-amount-val');
-    const receiptAmountText = document.getElementById('receipt-amount-text');
     const receiptNoVal = document.getElementById('receipt-no-val');
     const receiptDateVal = document.getElementById('receipt-date-val');
     const rupeeAmountBox = document.querySelector('.rupee-amount-box');
-    const collectorNameVal = document.getElementById('collector-name-val'); // NEW: Collector Name display span
+
+    const receiptAddressFlatNoLine = document.getElementById('receipt-address-flat-no-line');
+    const receiptAddressSocietyLine = document.getElementById('receipt-address-society-line');
+
+    const receiptNumMembersVal = document.getElementById('receipt-num-members-val');
+    const receiptContactNoVal = document.getElementById('receipt-contact-no-val'); // NEW
+    const collectorNameVal = document.getElementById('collector-name-val');
+    const collectorFlatNoVal = document.getElementById('collector-flat-no-val');
+    const collectorUnderline = document.querySelector('.collector-underline');
 
     let receiptCounter = localStorage.getItem('receiptCounter') ? parseInt(localStorage.getItem('receiptCounter')) : 1001;
 
@@ -29,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize the receipt number input field with the current counter
     receiptNoInput.value = receiptCounter;
-    receiptNoVal.textContent = receiptCounter; // Also update the receipt display initially
+    receiptNoVal.textContent = receiptCounter;
 
     function formatAmountInWords(num) {
         const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
@@ -55,15 +66,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = nameInput.value.trim();
         const amount = parseFloat(amountInput.value);
         const date = dateInput.value;
-        const manualReceiptNo = parseInt(receiptNoInput.value); // Get value from manual input
-        const collectorName = collectorNameInput.value.trim(); // Get value from collector name input
+        const manualReceiptNo = parseInt(receiptNoInput.value);
+        const flatNo = flatNoInput.value.trim();
+        const numMembers = parseInt(numMembersInput.value);
+        const contactNo = contactNoInput.value.trim(); // NEW
+        const collectorName = collectorNameInput.value.trim();
+        const collectorFlatNo = collectorFlatNoInput.value.trim();
 
         if (!name || isNaN(amount) || amount <= 0 || !date) {
             alert('Please enter a valid donor name, a positive amount, and a date.');
             return;
         }
+        if (isNaN(numMembers) || numMembers <= 0) {
+            alert('Please enter a valid number of members (a positive integer).');
+            return;
+        }
 
-        // Determine which receipt number to use: manual input if valid, otherwise auto-incremented
+        // Determine which receipt number to use
         let currentReceiptNumber;
         if (!isNaN(manualReceiptNo) && manualReceiptNo > 0) {
             currentReceiptNumber = manualReceiptNo;
@@ -74,14 +93,53 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update receipt details
         receiptNameVal.textContent = name;
         receiptAmountVal.textContent = amount.toLocaleString('en-IN');
-        receiptAmountText.textContent = formatAmountInWords(amount);
         rupeeAmountBox.textContent = amount.toLocaleString('en-IN');
 
-        // Update date, receipt number, and collector name on the receipt
+        // Update address with Flat No.
+        if (flatNo) {
+            receiptAddressFlatNoLine.textContent = `Flat No: ${flatNo},`; // Update content for flat no line
+        } else {
+            receiptAddressFlatNoLine.textContent = ''; // Clear if no flat no
+        }
+        receiptAddressSocietyLine.textContent = `Sensorium by Joyville Society.`; // Update content for society line
+
+
+        // Update Number of Members
+        receiptNumMembersVal.textContent = numMembers;
+
+        // Update Contact Number
+        receiptContactNoVal.textContent = contactNo || '.................................'; // Display contact no, or default placeholder
+
+
+        // Update date, receipt number
         const [year, month, day] = date.split('-');
         receiptDateVal.textContent = `${day}-${month}-${year}`;
-        receiptNoVal.textContent = currentReceiptNumber; // Display the chosen receipt number
-        collectorNameVal.textContent = collectorName || '___________________'; // Display collector name, fallback if empty
+        receiptNoVal.textContent = currentReceiptNumber;
+
+        // Update Collector Name and Flat No
+        collectorNameVal.textContent = collectorName || '';
+        collectorFlatNoVal.textContent = collectorFlatNo;
+
+        // Show/hide collector flat no and underline based on input
+        if (collectorName || collectorFlatNo) {
+            collectorUnderline.style.display = 'block';
+        } else {
+            collectorUnderline.style.display = 'none'; // Hide underline if no collector info
+        }
+        // If collector flat no is empty, hide its span.
+        if (!collectorFlatNo) {
+            collectorFlatNoVal.style.display = 'none';
+        } else {
+            collectorFlatNoVal.style.display = 'block';
+        }
+
+        // If both collector name and flat no are empty, replace with underscores and hide extra info
+        if (!collectorName && !collectorFlatNo) {
+            collectorNameVal.textContent = '___________________';
+            collectorFlatNoVal.style.display = 'none';
+            collectorUnderline.style.display = 'none';
+        }
+
 
         downloadPdfBtn.disabled = false;
         downloadImageBtn.disabled = false;
@@ -90,13 +148,13 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadPdfBtn.addEventListener('click', () => {
         const receiptContainer = document.getElementById('receipt-container');
         const inputSection = document.querySelector('.input-section');
-        inputSection.style.display = 'none'; // Temporarily hide input section
+        inputSection.style.display = 'none';
 
         html2canvas(receiptContainer, {
-            scale: 3, // Increased scale for even better quality in PDF
+            scale: 3,
             useCORS: true,
             logging: false,
-            backgroundColor: '#FFFDE7', // Ensure background is captured correctly
+            backgroundColor: '#FFFDE7',
         }).then(canvas => {
             const imgData = canvas.toDataURL('image/png');
             const { jsPDF } = window.jspdf;
@@ -108,36 +166,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
 
-            // Use the displayed receipt number for the filename
             pdf.save(`Ganpati_Receipt_${receiptNoVal.textContent}_${nameInput.value.replace(/\s/g, '_')}.pdf`);
 
-            // Update receipt counter for the next receipt:
-            // Ensure the next auto-incremented number is at least one greater than the one just used
-            // and also respects any higher numbers previously stored in local storage.
             const currentDisplayedReceiptNo = parseInt(receiptNoVal.textContent);
             if (!isNaN(currentDisplayedReceiptNo)) {
                 receiptCounter = Math.max(currentDisplayedReceiptNo + 1, receiptCounter);
                 localStorage.setItem('receiptCounter', receiptCounter);
-                receiptNoInput.value = receiptCounter; // Update the input field for the next receipt
-                receiptNoVal.textContent = receiptCounter; // Update receipt display too, anticipating the next
+                receiptNoInput.value = receiptCounter;
             }
 
-            inputSection.style.display = 'flex'; // Re-show input section
+            inputSection.style.display = 'flex';
         }).catch(error => {
             console.error("Error generating PDF:", error);
             alert("Failed to generate PDF. Please try again.");
-            inputSection.style.display = 'flex'; // Re-show input section on error
+            inputSection.style.display = 'flex';
         });
     });
 
-    // Image download does not increment the receipt counter (typically PDF is the official record)
     downloadImageBtn.addEventListener('click', () => {
         const receiptContainer = document.getElementById('receipt-container');
         const inputSection = document.querySelector('.input-section');
-        inputSection.style.display = 'none'; // Temporarily hide input section
+        inputSection.style.display = 'none';
 
         html2canvas(receiptContainer, {
-            scale: 3, // Increased scale for better quality image
+            scale: 3,
             useCORS: true,
             logging: false,
             backgroundColor: '#FFFDE7',
@@ -148,11 +200,11 @@ document.addEventListener('DOMContentLoaded', () => {
             link.click();
             link.remove();
 
-            inputSection.style.display = 'flex'; // Re-show input section
+            inputSection.style.display = 'flex';
         }).catch(error => {
             console.error("Error generating image:", error);
             alert("Failed to generate image. Please try again.");
-            inputSection.style.display = 'flex'; // Re-show input section on error
+            inputSection.style.display = 'flex';
         });
     });
 });
