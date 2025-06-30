@@ -235,7 +235,7 @@ h1 {
 
 .details-left {
     width: 100%; /* Ensure it uses full width to control lines */
-    display: block; /* Use block flow, not flex, for easier spacing */
+    display: block; /* Use block flow for easier spacing */
 }
 
 .details-right {
@@ -269,7 +269,7 @@ h1 {
     margin-bottom: 10px; /* Add more space below donor name */
 }
 
-.details-left p:nth-child(2) { /* "Address:" paragraph */
+.details-left p:nth-child(2) { /* "Address:" paragraph (the label) */
     margin-bottom: 0; /* No margin-bottom, let the sub-lines control spacing */
 }
 

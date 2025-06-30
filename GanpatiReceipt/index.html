@@ -41,7 +41,7 @@
                 <label for="numMembersInput">No. of Members:</label>
                 <input type="number" id="numMembersInput" placeholder="e.g., 4" min="1">
             </div>
-            <!-- NEW: Input for Contact Number -->
+            <!-- Input for Contact Number -->
             <div class="input-group">
                 <label for="contactNoInput">Contact No.:</label>
                 <input type="text" id="contactNoInput" placeholder="e.g., 9876543210">
@@ -81,17 +81,18 @@
                 <div class="details-left">
                     <p>Mr. / Mrs.: <span id="receipt-name-val" class="dotted-underline">.................................</span></p>
                     <p>Address:</p>
-                    <p class="address-sub-line">Flat No: <span id="receipt-address-flat-no-line" class="dotted-underline">.................................</span>,</p>
-                    <p class="address-sub-line"><span id="receipt-address-society-line" class="dotted-underline">Sensorium by Joyville Society.</span></p>
+                    <!-- UPDATED: Address structure for precise rendering -->
+                    <p class="address-sub-line">Flat No: <span id="receipt-address-flat-no-val" class="dotted-underline">.................................</span>,</p>
+                    <p class="address-sub-line"><span id="receipt-address-society-val" class="dotted-underline">Sensorium by Joyville Society.</span></p>
 
                     <p>Donation amount: <span id="receipt-amount-val" class="dotted-underline">.................................</span></p>
                     <p>No. of Members: <span id="receipt-num-members-val" class="dotted-underline">.................................</span></p>
-                    <!-- NEW: Display for Contact Number -->
+                    <!-- Display for Contact Number -->
                     <p>Contact No.: <span id="receipt-contact-no-val" class="dotted-underline">.................................</span></p>
                     <p class="received-thanks">Received with thanks.</p>
                 </div>
                 <div class="details-right">
-                    <!-- Removed the "Amount" text here -->
+                    <!-- This section is now explicitly empty, no text here -->
                 </div>
             </div>
 

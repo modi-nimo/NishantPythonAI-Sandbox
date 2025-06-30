@@ -23,3 +23,6 @@ fonttools~=4.56.0
 pypandoc~=1.15
 smolagents~=1.16.1
 langchain-community~=0.3.20
+pygeai~=0.2.6
+openai~=1.68.2
+supabase~=2.15.3

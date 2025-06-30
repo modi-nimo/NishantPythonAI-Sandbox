@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const receiptNoInput = document.getElementById('receiptNoInput');
     const flatNoInput = document.getElementById('flatNoInput');
     const numMembersInput = document.getElementById('numMembersInput');
-    const contactNoInput = document.getElementById('contactNoInput'); // NEW
+    const contactNoInput = document.getElementById('contactNoInput');
     const collectorNameInput = document.getElementById('collectorNameInput');
     const collectorFlatNoInput = document.getElementById('collectorFlatNoInput');
 
@@ -19,11 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const receiptDateVal = document.getElementById('receipt-date-val');
     const rupeeAmountBox = document.querySelector('.rupee-amount-box');
 
-    const receiptAddressFlatNoLine = document.getElementById('receipt-address-flat-no-line');
-    const receiptAddressSocietyLine = document.getElementById('receipt-address-society-line');
+    // Updated element references for address lines
+    const receiptAddressFlatNoVal = document.getElementById('receipt-address-flat-no-val'); // Now holds only flat number value
+    const receiptAddressSocietyVal = document.getElementById('receipt-address-society-val'); // Now holds only society value
 
     const receiptNumMembersVal = document.getElementById('receipt-num-members-val');
-    const receiptContactNoVal = document.getElementById('receipt-contact-no-val'); // NEW
+    const receiptContactNoVal = document.getElementById('receipt-contact-no-val');
     const collectorNameVal = document.getElementById('collector-name-val');
     const collectorFlatNoVal = document.getElementById('collector-flat-no-val');
     const collectorUnderline = document.querySelector('.collector-underline');
@@ -69,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const manualReceiptNo = parseInt(receiptNoInput.value);
         const flatNo = flatNoInput.value.trim();
         const numMembers = parseInt(numMembersInput.value);
-        const contactNo = contactNoInput.value.trim(); // NEW
+        const contactNo = contactNoInput.value.trim();
         const collectorName = collectorNameInput.value.trim();
         const collectorFlatNo = collectorFlatNoInput.value.trim();
 
@@ -97,19 +98,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update address with Flat No.
         if (flatNo) {
-            receiptAddressFlatNoLine.textContent = `Flat No: ${flatNo},`; // Update content for flat no line
+            receiptAddressFlatNoVal.textContent = flatNo; // Just the flat number here
         } else {
-            receiptAddressFlatNoLine.textContent = ''; // Clear if no flat no
+            receiptAddressFlatNoVal.textContent = '.................................'; // Placeholder if empty
         }
-        receiptAddressSocietyLine.textContent = `Sensorium by Joyville Society.`; // Update content for society line
-
+        receiptAddressSocietyVal.textContent = `Sensorium by Joyville Society.`; // Static society text
 
         // Update Number of Members
         receiptNumMembersVal.textContent = numMembers;
 
         // Update Contact Number
         receiptContactNoVal.textContent = contactNo || '.................................'; // Display contact no, or default placeholder
-
 
         // Update date, receipt number
         const [year, month, day] = date.split('-');
