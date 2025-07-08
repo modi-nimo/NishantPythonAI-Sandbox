@@ -14,6 +14,21 @@ def refresh_database_schema():
         return "<span style='color: red;'>Error refreshing database schema.</span>"
     return f"<span style='color: green;'> {response.json()['response']} </span>"
 
+def ask_database(query: str):
+    """
+    Function to send a query to the database and get a response.
+    This is a placeholder function that simulates querying the database.
+    """
+    if not query:
+        return "Query cannot be empty."
+
+    response = requests.post(f"{base_url}/query_db", json={"query": query})
+
+    if response.status_code != 200:
+        return f"Error: {response.json()['detail']}"
+
+    return response.json()['response']
+
 smart_db = gr.Blocks()
 
 with smart_db:
@@ -33,6 +48,6 @@ with smart_db:
         with gr.Column(scale=1):
             response_output = gr.Textbox(label="Response", interactive=False)
 
-    submit_button.click(fn=lambda x: "This is a placeholder response for: " + x, inputs=query_input, outputs=response_output)
+    submit_button.click(fn=ask_database, inputs=[query_input], outputs=response_output)
 
 smart_db.launch(share=False, enable_monitoring=True)
