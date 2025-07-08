@@ -49,7 +49,7 @@ smart_db_team = Team(
     team_session_state={"application_response": ApplicationResponseModel()},
 )
 
-if __name__ == "__main__":
-    # You can add more functionality here to interact with the team or run specific tasks.
-    smart_db_team.run("User Question: Please give me 5 recently joined employee details")
-    print(smart_db_team.team_session_state["application_response"].generated_sql_query)
+# if __name__ == "__main__":
+#     You can add more functionality here to interact with the team or run specific tasks.
+    # smart_db_team.run("User Question: Please give me 5 recently joined employee details")
+    # print(smart_db_team.team_session_state["application_response"].generated_sql_query)
