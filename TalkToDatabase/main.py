@@ -13,20 +13,14 @@ from helper import *
 load_dotenv()
 
 class ApplicationResponseModel(BaseModel):
-    # class Config:
-    #         arbitrary_types_allowed = True
+    class Config:
+        arbitrary_types_allowed = True
 
-    user_question: str
-    generated_sql_query: str
+    user_question: str = ""
+    generated_sql_query: str = ""
     explanation: str = None
+    dataframe: pd.DataFrame = None
 
-table_manager = Agent(
-    name="Table Manager Agent",
-    tools=[refresh_db_schema],
-    model=Gemini("gemini-2.5-flash",api_key=os.environ["GOOGLE_API_KEY"]),
-    # model=Groq("deepseek-r1-distill-llama-70b", api_key=os.environ["GROQ_API_KEY"]),
-    instructions="You should refresh the database schema, only when explicitly asked by user to do so."
-)
 
 sql_manger = Agent(
     name="SQL Manager Agent",
@@ -40,9 +34,8 @@ smart_db_team = Team(
     name="SmartDB Team",
     description="A team of agents that can help you with database queries and management.",
     mode="coordinate",
-    members=[table_manager,sql_manger],
+    members=[sql_manger],
     model=Gemini("gemini-2.5-flash",api_key=os.environ["GOOGLE_API_KEY"]),
-    # model=Groq("deepseek-r1-distill-llama-70b",api_key=os.environ["GROQ_API_KEY"]),
     instructions="""
     You will perform the tasks and complete it using appropriate agent. Things to consider while performing the tasks:
     1. Be concise and clear in your responses.
@@ -52,11 +45,11 @@ smart_db_team = Team(
     Remember: You are the final gatekeeper of the task. You need to make sure that the task is completed by the appropriate agent.
     """,
     debug_mode=True,
-    # response_model=ApplicationResponseModel,
-    show_members_responses=True
+    show_members_responses=True,
+    team_session_state={"application_response": ApplicationResponseModel()},
 )
 
 if __name__ == "__main__":
     # You can add more functionality here to interact with the team or run specific tasks.
-    response = smart_db_team.run("User Question: Please give me 5 recently joined employee details")
-    print(response.content)
+    smart_db_team.run("User Question: Please give me 5 recently joined employee details")
+    print(smart_db_team.team_session_state["application_response"].generated_sql_query)

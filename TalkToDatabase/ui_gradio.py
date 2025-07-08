@@ -1,4 +1,5 @@
 import gradio as gr
+import pandas as pd
 import requests
 
 
@@ -20,14 +21,14 @@ def ask_database(query: str):
     This is a placeholder function that simulates querying the database.
     """
     if not query:
-        return "Query cannot be empty."
+        return "Query cannot be empty.", pd.DataFrame()
 
     response = requests.post(f"{base_url}/query_db", json={"query": query})
 
     if response.status_code != 200:
         return f"Error: {response.json()['detail']}"
 
-    return response.json()['response']
+    return response.json()['response']['generated_sql_query'], pd.DataFrame(response.json()['response']['dataframe']) if response.json()['response']['dataframe'] else pd.DataFrame()
 
 smart_db = gr.Blocks()
 
@@ -44,10 +45,12 @@ with smart_db:
         with gr.Column(scale=2):
             query_input = gr.Textbox(label="Enter your query", placeholder="Type your SQL query here...")
             submit_button = gr.Button("Submit Query")
-
+    with gr.Row():
         with gr.Column(scale=1):
             response_output = gr.Textbox(label="Response", interactive=False)
 
-    submit_button.click(fn=ask_database, inputs=[query_input], outputs=response_output)
+    with gr.Row():
+        dataframe = gr.Dataframe(label="Query Results",interactive=False)
+    submit_button.click(fn=ask_database, inputs=[query_input], outputs=[response_output,dataframe])
 
 smart_db.launch(share=False, enable_monitoring=True)

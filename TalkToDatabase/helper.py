@@ -2,6 +2,7 @@ import json
 import os
 import pprint
 
+import pandas as pd
 from chromadb import Settings
 from dotenv import load_dotenv
 import psycopg
@@ -10,16 +11,15 @@ import chromadb
 from pydantic import BaseModel
 from google import genai
 from google.genai import types
-
+from agno.agent.agent import Agent
 
 load_dotenv()
 
 """
-1. Embeddings Database: When you Refresh the database schema, it will create a JSON file with the schema of the database. It should also create ChromaDB embeddings for each type. 
-2. Query Builder: That generates SQL queries based on user input. ChromDB wil act as Retriever in this.
 3. Insights Generator: That generates insights based on the data in the database. It will use the dataframe 
 4. Chart And Graph Generator: That generates charts and graphs based on the data in the database. It will use the dataframe.
-
+5. Debug Agent: That will help in debugging the SQL queries and the data returned by the database.
+6. Recom
 Possible Improvements:
 - ChromaDB is taking a lot of time to generate embeddings. Can we speed it up.
 """
@@ -28,15 +28,18 @@ class SQLOutput(BaseModel):
     generated_sql_query: str
     explanation: str = None
 
-def generate_sql_query(user_question:str) -> str:
+def generate_sql_query(agent: Agent,user_question:str) -> str:
     """
     Generates a SQL query based on the user's question.
+    :param agent: Agno Agent: The agent that will generate the SQL query.
     :param user_question: str: The user's question in natural language.
     :return: str: The generated SQL query.
 
     """
     # First we will clean the User Question.
     cleaned_question = user_question.replace("'", "").replace('"', '').replace("?","").replace("!","").strip()
+
+    agent.team_session_state["application_response"].user_question = cleaned_question
 
     # Then we will use the ChromaDB to retrieve the relevant tables and columns.
     client = chromadb.PersistentClient(path="Embeddings/",settings=Settings(anonymized_telemetry=False))
@@ -53,6 +56,7 @@ def generate_sql_query(user_question:str) -> str:
         query_texts=[cleaned_question],
         n_results=5
     )
+
     # print(columns_result)
 
 
@@ -113,12 +117,37 @@ def generate_sql_query(user_question:str) -> str:
     )
 
     output_response: SQLOutput = llm_response.parsed
-    print(output_response)
+    agent.team_session_state["application_response"].generated_sql_query = output_response.generated_sql_query
+    agent.team_session_state["application_response"].explanation = output_response.explanation
+
     return output_response.generated_sql_query
 
-def execute_query(sql_query: str) -> tuple:
+def internal_execute_query(sql_query: str, params: tuple = None) -> tuple:
+    """
+    Executes a SQL query against a PostgresSQL database and returns the results.
+    :param sql_query: str: The SQL query to execute.
+    :param params: tuple: Optional parameters for the SQL query.
+    :return: tuple: A tuple containing the headers and rows of the result set.
+    """
+    try:
+        db_url = f"postgresql://{os.environ['POSTGRESQL_USERNAME']}:{os.environ['POSTGRESQL_PASSWORD']}@{os.environ['POSTGRESQL_HOST']}:{os.environ['POSTGRESQL_PORT']}/{os.environ['POSTGRESQL_DATABASE']}"
+        with psycopg.connect(db_url) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query, params)
+                if cursor.description:
+                    headers = [desc[0] for desc in cursor.description]
+                    rows = cursor.fetchall()
+                    return headers, rows
+                else:
+                    return [], []
+    except Exception as e:
+        print(f"Error executing query: {e}")
+        return [] , []
+
+def execute_query(agent:Agent, sql_query: str) -> tuple:
     """
     Executes a SQL query against a PostgresSQL database and returns the results.It does not generate the SQL query, it only executes it.
+    :param agent: Agno Agent: The agent that will execute the SQL query.
     :param sql_query: str: The SQL query to execute.
     :return: tuple: A tuple containing the headers and rows of the result set.
     """
@@ -130,6 +159,8 @@ def execute_query(sql_query: str) -> tuple:
                 if cursor.description:
                     headers = [desc[0] for desc in cursor.description]
                     rows = cursor.fetchall()
+                    df = pd.DataFrame(rows, columns=headers)
+                    agent.team_session_state["application_response"].dataframe = df
                     return headers, rows
                 else:
                     return [], []
@@ -143,7 +174,7 @@ def get_all_tables() -> list:
     :return: list: A list of table names.
     """
     query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'dbo';"
-    headers, rows = execute_query(query)
+    headers, rows = internal_execute_query(query)
     return [row[0] for row in rows] if rows else []
 
 def get_all_columns(table_name: str) -> list:
@@ -153,7 +184,7 @@ def get_all_columns(table_name: str) -> list:
         :return: list: A list of tuples (column_name, data_type).
         """
         query = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = %s;"
-        headers, rows = execute_query(query, (table_name,))
+        headers, rows = internal_execute_query(query, (table_name,))
         return [(row[0], row[1]) for row in rows] if rows else []
 
 def refresh_db_schema() -> str:
@@ -162,26 +193,30 @@ def refresh_db_schema() -> str:
     :return: str: A message indicating the schema has been refreshed.
     """
     # Delete the existing schema file if it exists.
-    if os.path.exists("database_schema.json"):
-        os.remove("database_schema.json")
+    try:
+        if os.path.exists("database_schema.json"):
+            os.remove("database_schema.json")
 
-    tables = get_all_tables()
-    schema = {}
-    for table in tables:
-        for single_col, data_type in get_all_columns(table):
-            if table not in schema:
-                schema[table] = []
-            schema[table].append({"column_name": single_col, "data_type": data_type, "column_description": ""})
+        tables = get_all_tables()
+        schema = {}
+        for table in tables:
+            for single_col, data_type in get_all_columns(table):
+                if table not in schema:
+                    schema[table] = []
+                schema[table].append({"column_name": single_col, "data_type": data_type, "column_description": ""})
 
-    # Write the schema to a JSON file.
-    schema_file_path = "database_schema.json"
-    with open(schema_file_path, 'w') as schema_file:
-        import json
-        json.dump(schema, schema_file, indent=4)
+        # Write the schema to a JSON file.
+        schema_file_path = "database_schema.json"
+        with open(schema_file_path, 'w') as schema_file:
+            import json
+            json.dump(schema, schema_file, indent=4)
 
-    generate_embeddings()
+        generate_embeddings()
 
-    return "Database schema refreshed successfully."
+        return "Database schema refreshed successfully."
+    except Exception as e:
+        print(f"Error refreshing database schema: {e}")
+        return "Failed to refresh database schema."
 
 def generate_embeddings():
 
