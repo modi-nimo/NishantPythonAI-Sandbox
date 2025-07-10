@@ -35,10 +35,9 @@ load_dotenv()
 # AgnoInstrumentor().instrument()
 
 """
-3. Insights Generator: That generates insights based on the data in the database. It will use the dataframe 
 4. Chart And Graph Generator: That generates charts and graphs based on the data in the database. It will use the dataframe.
 5. Debug Agent: That will help in debugging the SQL queries and the data returned by the database.
-6. Recom
+
 Possible Improvements:
 - ChromaDB is taking a lot of time to generate embeddings. Can we speed it up.
 """
