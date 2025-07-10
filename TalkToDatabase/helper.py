@@ -12,8 +12,27 @@ from pydantic import BaseModel
 from google import genai
 from google.genai import types
 from agno.agent.agent import Agent
+from groq import Groq
 
 load_dotenv()
+
+#
+# from openinference.instrumentation.agno import AgnoInstrumentor
+# from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+# from opentelemetry.sdk import trace as trace_sdk
+# from opentelemetry import trace as trace_api
+# from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor
+#
+# endpoint = "http://127.0.0.1:6006/v1/traces"
+# tracer_provider = trace_sdk.TracerProvider()
+# tracer_provider.add_span_processor(SimpleSpanProcessor(OTLPSpanExporter(endpoint)))
+# # Optionally, you can also print the spans to the console.
+# tracer_provider.add_span_processor(SimpleSpanProcessor(ConsoleSpanExporter()))
+#
+# trace_api.set_tracer_provider(tracer_provider=tracer_provider)
+#
+# # Start instrumenting agno
+# AgnoInstrumentor().instrument()
 
 """
 3. Insights Generator: That generates insights based on the data in the database. It will use the dataframe 
@@ -24,31 +43,33 @@ Possible Improvements:
 - ChromaDB is taking a lot of time to generate embeddings. Can we speed it up.
 """
 
+
 class SQLOutput(BaseModel):
     generated_sql_query: str
     explanation: str = None
 
-def generate_sql_query(agent: Agent,user_question:str) -> str:
+
+def generate_sql_query(agent: Agent) -> str:
     """
     Generates a SQL query based on the user's question.
-    :param agent: Agno Agent: The agent that will generate the SQL query.
-    :param user_question: str: The user's question in natural language.
+    :param agent: Agno Agent: The agent that will generate the SQL query
     :return: str: The generated SQL query.
 
     """
     # First we will clean the User Question.
-    cleaned_question = user_question.replace("'", "").replace('"', '').replace("?","").replace("!","").strip()
+    user_question = agent.team_session_state["application_response"].user_question
+
+    cleaned_question = user_question.replace("'", "").replace('"', '').replace("?", "").replace("!", "").strip()
 
     agent.team_session_state["application_response"].user_question = cleaned_question
 
     # Then we will use the ChromaDB to retrieve the relevant tables and columns.
-    client = chromadb.PersistentClient(path="Embeddings/",settings=Settings(anonymized_telemetry=False))
+    client = chromadb.PersistentClient(path="Embeddings/", settings=Settings(anonymized_telemetry=False))
     table_collection = client.get_collection(name="table_names")
     tables_result = table_collection.query(
         query_texts=[cleaned_question],
         n_results=3
     )
-    # print(tables_result)
 
     # Then we will use the retrieved tables and columns to generate the SQL query.
     column_collection = client.get_collection(name="column_names")
@@ -57,23 +78,23 @@ def generate_sql_query(agent: Agent,user_question:str) -> str:
         n_results=5
     )
 
-    # print(columns_result)
+    example_collection = client.get_collection(name="examples")
+    example_queries = example_collection.query(
+        query_texts=[cleaned_question],
+        n_results=3
+    )
 
-
-    """
-    **Your Output Must Include:**
-    1.  **Generated SQL Query:** The complete Postgres-compatible SQL query.
-    2.  **Explanation (Optional but Recommended):** A brief explanation of the query's logic, including why certain clauses or functions were used.
-    """
     db_type = "Postgres"
 
     sql_prompt = f""" You are an expert SQL query generator. Your task is to translate natural language questions into accurate and efficient {db_type}-compatible SQL queries.
     
     You will be provided with:
     1.  **User Question:** {user_question}
-    2.  **Tables:** {tables_result}
-    3.  **Relevant Column Data :** {columns_result}
-    4. ""Database Schema:** dbo
+    2.  **Relevant Tables:** {','.join(tables_result["documents"][0])}
+    3.  **Relevant Column Data :** { ' \n '.join([str(single_col) for single_col in columns_result["metadatas"][0]])}
+    4.  **Database Schema:** dbo
+    5.  **Example SQLs:** 
+        {' \n '.join([str(single_example) for single_example in example_queries["metadatas"][0]])}
     ---
     
     **Instructions to follow:**
@@ -87,28 +108,13 @@ def generate_sql_query(agent: Agent,user_question:str) -> str:
     aggregate functions (`COUNT`, `SUM`, `AVG`, `MIN`, `MAX`), subqueries, and common {db_type}-specific functions (e.g., `DATE_TRUNC`, `EXTRACT`, `COALESCE`).
     
     
-    
-    **Example Input:**
-    **User Question:**
-    "List all product names and their prices."
-    
-    **Database Schema:**
-    Table: dbo."products"
-    Columns:
-      - `product_id` (INTEGER, PRIMARY KEY)
-      - `product_name` (VARCHAR)
-      - `price` (NUMERIC)
-      - `stock_quantity` (INTEGER)
-    
-    Example Output (SQL Query): "SELECT "product_name", "price" FROM dbo."products";"
-    
 """
 
     client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
     llm_response = client.models.generate_content(
         model="gemini-2.5-pro",
         contents=sql_prompt,
-        config= types.GenerateContentConfig(
+        config=types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(thinking_budget=-1),
             temperature=0.2,
             response_mime_type="application/json",
@@ -121,6 +127,7 @@ def generate_sql_query(agent: Agent,user_question:str) -> str:
     agent.team_session_state["application_response"].explanation = output_response.explanation
 
     return output_response.generated_sql_query
+
 
 def internal_execute_query(sql_query: str, params: tuple = None) -> tuple:
     """
@@ -142,9 +149,10 @@ def internal_execute_query(sql_query: str, params: tuple = None) -> tuple:
                     return [], []
     except Exception as e:
         print(f"Error executing query: {e}")
-        return [] , []
+        return [], []
 
-def execute_query(agent:Agent, sql_query: str) -> tuple:
+
+def execute_query(agent: Agent, sql_query: str) -> tuple:
     """
     Executes a SQL query against a PostgresSQL database and returns the results.It does not generate the SQL query, it only executes it.
     :param agent: Agno Agent: The agent that will execute the SQL query.
@@ -166,7 +174,8 @@ def execute_query(agent:Agent, sql_query: str) -> tuple:
                     return [], []
     except Exception as e:
         print(f"Error executing query: {e}")
-        return [] , []
+        return [], []
+
 
 def get_all_tables() -> list:
     """
@@ -177,15 +186,17 @@ def get_all_tables() -> list:
     headers, rows = internal_execute_query(query)
     return [row[0] for row in rows] if rows else []
 
+
 def get_all_columns(table_name: str) -> list:
-        """
-        Retrieves all column names and their data types for a given table in the PostgreSQL database.
-        :param table_name: str: The name of the table.
-        :return: list: A list of tuples (column_name, data_type).
-        """
-        query = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = %s;"
-        headers, rows = internal_execute_query(query, (table_name,))
-        return [(row[0], row[1]) for row in rows] if rows else []
+    """
+    Retrieves all column names and their data types for a given table in the PostgreSQL database.
+    :param table_name: str: The name of the table.
+    :return: list: A list of tuples (column_name, data_type).
+    """
+    query = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = %s;"
+    headers, rows = internal_execute_query(query, (table_name,))
+    return [(row[0], row[1]) for row in rows] if rows else []
+
 
 def refresh_db_schema() -> str:
     """
@@ -218,7 +229,27 @@ def refresh_db_schema() -> str:
         print(f"Error refreshing database schema: {e}")
         return "Failed to refresh database schema."
 
+
 def generate_embeddings():
+    client = chromadb.PersistentClient(path="Embeddings/",
+                                       settings=Settings(allow_reset=True, anonymized_telemetry=False))
+    client.reset()  # Empty the database before adding new data.
+
+
+    # Storing Examples in ChromaDB.
+    with open("examples.json", "r") as file:
+        examples = file.read()
+        examples = json.loads(examples)
+
+    example_collection = client.create_collection(name="examples")
+
+    print("Storing examples in ChromaDB...")
+    example_collection.add(
+        documents=[example["example_question"] for example in examples],
+        metadatas=[{"example_question":example["example_question"], "example_answer": example["example_answer"]} for example in examples],
+        ids=[str(uuid.uuid4()) for _ in range(0, len(examples))]
+    )
+    print("Examples stored in ChromaDB.")
 
     with open("database_schema.json", "r") as file:
         schema = file.read()
@@ -226,8 +257,6 @@ def generate_embeddings():
     database_schema = json.loads(schema)
 
     # Storing Table Names in ChromaDB.
-    client = chromadb.PersistentClient(path="Embeddings/", settings=Settings(allow_reset=True,anonymized_telemetry=False))
-    client.reset() # Empty the database before adding new data.
 
     collection = client.create_collection(name="table_names")
     print("Storing table names in ChromaDB...")
@@ -235,7 +264,7 @@ def generate_embeddings():
     collection.add(
         documents=list(database_schema.keys()),
         metadatas=[{"table_name": table_name} for table_name in list(database_schema.keys())],
-        ids=[str(uuid.uuid4()) for _ in range(0,len(database_schema.keys()))]
+        ids=[str(uuid.uuid4()) for _ in range(0, len(database_schema.keys()))]
     )
     print("Table names stored in ChromaDB.")
 
@@ -245,7 +274,9 @@ def generate_embeddings():
     for table_name, columns in database_schema.items():
         collection.add(
             documents=[column["column_name"] for column in columns],
-            metadatas=[{"table_name": table_name, "column_name": column["column_name"], "data_type": column["data_type"]} for column in columns],
+            metadatas=[
+                {"table_name": table_name, "column_name": column["column_name"], "data_type": column["data_type"]} for
+                column in columns],
             ids=[str(uuid.uuid4()) for _ in range(0, len(columns))]
         )
     print(f"Column stored in ChromaDB.")
@@ -256,3 +287,42 @@ def generate_conversation_id() -> str:
     Generates a unique conversation ID.
     """
     return str(uuid.uuid4())
+
+
+def generate_insights(agent: Agent, question: str) -> str:
+    """
+    Generates insights based on the data in the dataframe. Make sure it runs only after the SQL query is executed.
+    :param agent: Agno Agent: The agent that will generate the insights.
+    :param question: str: The user's question to guide the insights generation.
+    :return: str: The generated insights and observations.
+    """
+    dataframe = agent.team_session_state["application_response"].dataframe
+    if dataframe.empty:
+        return "No data available to generate insights."
+
+    # Convert the DataFrame to a string representation for the LLM.
+    df_str = dataframe.to_csv(index=False)
+
+    insight_prompt = f"""You are a business analytics expert. Analyze the given dataframe and the asked User Question. 
+    Try to answer the question based on the data provided, and provide any insights that you feel can help to user.
+    If you cannot answer the question, just say "I cannot answer this question based on the data provided.".
+
+                        User Question:
+                        {question}
+
+                        Dataframe:
+                        {df_str}
+
+                        Output:
+                        """
+    client = Groq(api_key=os.environ["GROQ_API_KEY"])
+    response = client.chat.completions.create(
+        messages=[
+            {"role": "user",
+             "content": insight_prompt}
+        ],
+        model="mistral-saba-24b"
+    )
+    content = response.choices[0].message.content
+    agent.team_session_state["application_response"].insights = content
+    return content

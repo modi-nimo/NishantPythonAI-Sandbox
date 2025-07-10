@@ -1,0 +1,10 @@
+[
+  {
+  "example_question" : "Which employees have handled more than one defect? Show their names and the count of defects",
+  "example_answer" : "SELECT T2.\"FirstName\",  T2.\"LastName\",  COUNT(T1.\"DefectID\") AS \"DefectsHandled\" FROM dbo.\"Defects\" AS T1 JOIN dbo.\"Employees\" AS T2 ON T1.\"HandledByID\" = T2.\"EmployeeID\" GROUP BY T2.\"EmployeeID\", T2.\"FirstName\", T2.\"LastName\" HAVING COUNT(T1.\"DefectID\") > 1 ORDER BY \"DefectsHandled\" DESC"
+  },
+  {
+    "example_question" : "Show me all the products we manufacture.",
+    "example_answer" : "SELECT \"ProductName\", \"ProductCode\", \"UnitPrice\" FROM dbo.\"Products\";"
+  }
+]

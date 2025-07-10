@@ -28,7 +28,7 @@ def ask_database(query: str):
     if response.status_code != 200:
         return f"Error: {response.json()['detail']}"
 
-    return response.json()['response']['generated_sql_query'], pd.DataFrame(response.json()['response']['dataframe']) if response.json()['response']['dataframe'] else pd.DataFrame()
+    return response.json()['response']['generated_sql_query'], pd.DataFrame(response.json()['response']['dataframe']) if response.json()['response']['dataframe'] else pd.DataFrame() , response.json()['response']['insights']
 
 smart_db = gr.Blocks()
 
@@ -51,6 +51,10 @@ with smart_db:
 
     with gr.Row():
         dataframe = gr.Dataframe(label="Query Results",interactive=False)
-    submit_button.click(fn=ask_database, inputs=[query_input], outputs=[response_output,dataframe])
+
+    with gr.Row():
+        insights_output = gr.Textbox(label="Insights", interactive=False)
+
+    submit_button.click(fn=ask_database, inputs=[query_input], outputs=[response_output,dataframe, insights_output])
 
 smart_db.launch(share=False, enable_monitoring=True)

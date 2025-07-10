@@ -32,3 +32,8 @@ Flask~=2.3.3
 Flask-Cors~=4.0.0
 psycopg_binary
 arize-phoenix
+openinference-instrumentation-agno
+arize-phoenix
+opentelemetry-sdk
+opentelemetry-exporter-otlp-proto-grpc
+opentelemetry-distro

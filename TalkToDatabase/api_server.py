@@ -42,11 +42,14 @@ def query_db(request: QueryRequest):
     if not query:
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
     print("Received query:", query)
+    smart_db_team.team_session_state["application_response"].user_question = query
     smart_db_team.run(f"User Question: {query}")
     response = {"user_question": query,
                 "generated_sql_query": smart_db_team.team_session_state["application_response"].generated_sql_query,
                 "explanation": smart_db_team.team_session_state["application_response"].explanation,
-                "dataframe": smart_db_team.team_session_state["application_response"].dataframe.to_dict(orient="records") if smart_db_team.team_session_state["application_response"].dataframe is not None else None}
+                "dataframe": smart_db_team.team_session_state["application_response"].dataframe.to_dict(orient="records") if smart_db_team.team_session_state["application_response"].dataframe is not None else None,
+                "insights": smart_db_team.team_session_state["application_response"].insights
+                }
 
     return {"response": response}
 
