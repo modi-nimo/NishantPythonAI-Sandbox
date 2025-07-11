@@ -1,11 +1,11 @@
 [
   {
-  "example_question" : "List the names and roles of all employees.",
-  "example_answer" : "SELECT \"FirstName\", \"LastName\", \"Role\" FROM dbo.\"Employees\";"
+    "example_question": "List the names and roles of all employees.",
+    "example_answer": "SELECT \"FirstName\", \"LastName\", \"Role\" FROM dbo.\"Employees\";"
   },
   {
-    "example_question" : "Show me all the work orders that are currently in progress.",
-    "example_answer" : "SELECT \"WorkOrderID\", \"ProductID\", \"ScheduledStartDateTime\" FROM dbo.\"WorkOrders\" WHERE \"Status\" = 'InProgress';"
+    "example_question": "Show me all the work orders that are currently in progress.",
+    "example_answer": "SELECT \"WorkOrderID\", \"ProductID\", \"ScheduledStartDateTime\" FROM dbo.\"WorkOrders\" WHERE \"Status\" = 'InProgress';"
   },
   {
     "example_question": "What are the different types of defect categories?",
@@ -26,5 +26,17 @@
   {
     "example_question": "Show the total quantity produced for each product.",
     "example_answer": "SELECT T2.\"ProductName\", SUM(T1.\"QuantityProduced\") AS \"TotalQuantity\" FROM dbo.\"ProductionData\" AS T1 JOIN dbo.\"Products\" AS T2 ON T1.\"ProductID\" = T2.\"ProductID\" GROUP BY T2.\"ProductName\" ORDER BY \"TotalQuantity\" DESC;"
+  },
+  {
+    "example_question": "Which raw materials in the inventory were quality-checked by supervisors?",
+    "example_answer": "SELECT T3.\"MaterialName\", T1.\"Quantity\", T2.\"FirstName\" AS \"SupervisorFirstName\", T2.\"LastName\" AS \"SupervisorLastName\" FROM dbo.\"RawMaterialInventory\" AS T1 JOIN dbo.\"Employees\" AS T2 ON T1.\"QualityCheckedByID\" = T2.\"EmployeeID\" JOIN dbo.\"RawMaterials\" AS T3 ON T1.\"MaterialID\" = T3.\"MaterialID\" WHERE T2.\"Role\" = 'Supervisor';"
+  },
+  {
+    "example_question": "Find the top 3 employees who have handled the most defects.",
+    "example_answer": "SELECT T2.\"FirstName\", T2.\"LastName\", COUNT(T1.\"DefectID\") AS \"DefectsHandled\" FROM dbo.\"Defects\" AS T1 JOIN dbo.\"Employees\" AS T2 ON T1.\"HandledByID\" = T2.\"EmployeeID\" GROUP BY T2.\"FirstName\", T2.\"LastName\" ORDER BY \"DefectsHandled\" DESC LIMIT 3;"
+  },
+  {
+    "example_question": "List products that have had defects categorized as 'Material' issues.",
+    "example_answer": "SELECT DISTINCT T3.\"ProductName\" FROM dbo.\"Defects\" AS T1 JOIN dbo.\"WorkOrders\" AS T2 ON T1.\"WorkOrderID\" = T2.\"WorkOrderID\" JOIN dbo.\"Products\" AS T3 ON T2.\"ProductID\" = T3.\"ProductID\" JOIN dbo.\"DefectCategories\" AS T4 ON T1.\"CategoryID\" = T4.\"CategoryID\" WHERE T4.\"CategoryName\" = 'Material';"
   }
 ]
