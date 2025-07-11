@@ -25,7 +25,7 @@ class ApplicationResponseModel(BaseModel):
 
 sql_manger = Agent(
     name="SQL Manager Agent",
-    tools=[generate_sql_query, execute_query],
+    tools=[generate_sql_query, execute_query, debug_sql_query],
     model=Gemini("gemini-2.5-flash",api_key=os.environ["GOOGLE_API_KEY"]),
     debug_mode=True,
 )
@@ -48,6 +48,8 @@ smart_db_team = Team(
     You will perform the tasks and complete it using appropriate agent. Things to consider while performing the tasks:
     1. Be concise and clear in your responses.
     2. If you are able to generate a SQL query and execute it, generate the insights based on the dataframe returned by the SQL Manager Agent and try to answer the question.
+    3. If there is any error in the SQL query, use the debug_sql_query tool to debug the query and then execute it.
+    4. Perform the debugging of the SQL query max 3 times only. If the query is still not working, then return the error message to the user.
     
     Do not assume any data. The Tools provided by the agents are capable enough to handle the tasks.
     Always check the task to do before routing to an agent.

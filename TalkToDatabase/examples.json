@@ -1,10 +1,30 @@
 [
   {
-  "example_question" : "Which employees have handled more than one defect? Show their names and the count of defects",
-  "example_answer" : "SELECT T2.\"FirstName\",  T2.\"LastName\",  COUNT(T1.\"DefectID\") AS \"DefectsHandled\" FROM dbo.\"Defects\" AS T1 JOIN dbo.\"Employees\" AS T2 ON T1.\"HandledByID\" = T2.\"EmployeeID\" GROUP BY T2.\"EmployeeID\", T2.\"FirstName\", T2.\"LastName\" HAVING COUNT(T1.\"DefectID\") > 1 ORDER BY \"DefectsHandled\" DESC"
+  "example_question" : "List the names and roles of all employees.",
+  "example_answer" : "SELECT \"FirstName\", \"LastName\", \"Role\" FROM dbo.\"Employees\";"
   },
   {
-    "example_question" : "Show me all the products we manufacture.",
-    "example_answer" : "SELECT \"ProductName\", \"ProductCode\", \"UnitPrice\" FROM dbo.\"Products\";"
+    "example_question" : "Show me all the work orders that are currently in progress.",
+    "example_answer" : "SELECT \"WorkOrderID\", \"ProductID\", \"ScheduledStartDateTime\" FROM dbo.\"WorkOrders\" WHERE \"Status\" = 'InProgress';"
+  },
+  {
+    "example_question": "What are the different types of defect categories?",
+    "example_answer": "SELECT \"CategoryName\", \"Description\" FROM dbo.\"DefectCategories\";"
+  },
+  {
+    "example_question": "Find all defects that have not been closed yet.",
+    "example_answer": "SELECT \"DefectName\", \"DefectReason\", \"ReportedDateTime\" FROM dbo.\"Defects\" WHERE \"IsClosed\" = false;"
+  },
+  {
+    "example_question": "List all work orders and the name of the product associated with each.",
+    "example_answer": "SELECT T1.\"WorkOrderID\", T1.\"Status\", T2.\"ProductName\" FROM dbo.\"WorkOrders\" AS T1 JOIN dbo.\"Products\" AS T2 ON T1.\"ProductID\" = T2.\"ProductID\";"
+  },
+  {
+    "example_question": "What raw materials were used for Work Order ID 1, and in what quantity?",
+    "example_answer": "SELECT T2.\"MaterialName\", T1.\"QuantityUsed\", T1.\"UsageDateTime\" FROM dbo.\"WorkOrderMaterials\" AS T1 JOIN dbo.\"RawMaterials\" AS T2 ON T1.\"MaterialID\" = T2.\"MaterialID\" WHERE T1.\"WorkOrderID\" = 1;"
+  },
+  {
+    "example_question": "Show the total quantity produced for each product.",
+    "example_answer": "SELECT T2.\"ProductName\", SUM(T1.\"QuantityProduced\") AS \"TotalQuantity\" FROM dbo.\"ProductionData\" AS T1 JOIN dbo.\"Products\" AS T2 ON T1.\"ProductID\" = T2.\"ProductID\" GROUP BY T2.\"ProductName\" ORDER BY \"TotalQuantity\" DESC;"
   }
 ]
