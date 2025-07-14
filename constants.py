@@ -1,4 +1,4 @@
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.5-flash"
 ABHIRUCHI_GULHANE = "Gulhane, Abhiruchi"
 NISHANT_MODI = "Modi, Nishant"
 NICOLAY_HILARION = "Hilarion, Nicolay"
