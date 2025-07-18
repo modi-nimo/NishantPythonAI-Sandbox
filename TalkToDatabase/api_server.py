@@ -71,3 +71,4 @@ def query_db(request: QueryRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="localhost", port=8000, log_level="info")
+# To run the server, use the command: uvicorn api_server:app --reload
