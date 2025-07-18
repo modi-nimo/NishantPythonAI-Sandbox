@@ -1,6 +1,7 @@
 # This is my API Server code
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware # Import CORSMiddleware
 
 from TalkToDatabase.helper import refresh_db_schema
 from TalkToDatabase.main import smart_db_team
@@ -9,6 +10,20 @@ from pydantic import BaseModel
 load_dotenv()
 
 app = FastAPI()
+
+# Add CORS middleware
+origins = [
+    "http://localhost",
+    "http://localhost:3000", # Allow your React app's origin
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.get("/health")
 def health_check():
     """
