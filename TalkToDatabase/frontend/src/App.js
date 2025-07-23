@@ -138,21 +138,60 @@ function App() {
   const handleQuerySubmit = async (userQuery) => {
     setLoading(true);
     setError(null);
-    setResponse(null);
-    const minLoadingTime = 1000;
-    const startTime = Date.now();
+    setResponse({
+      user_question: userQuery,
+      generated_sql_query: '',
+      explanation: '',
+      dataframe: null,
+      insights: ''
+    }); // Initialize response for streaming
+
     try {
-      const result = await axios.post('http://localhost:8000/query_db', { query: userQuery });
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime < minLoadingTime) await new Promise(resolve => setTimeout(resolve, minLoadingTime - elapsedTime));
-      setResponse(result.data.response);
+      const eventSource = new EventSource(`http://localhost:8000/query_db?query=${encodeURIComponent(userQuery)}`);
+
+      eventSource.onopen = () => {
+        console.log('SSE connection opened.');
+        setLoading(true);
+      };
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Received SSE data:', data);
+
+        // Update the response state incrementally
+        setResponse(prevResponse => {
+          const newResponse = { ...prevResponse, ...data };
+          // If dataframe is present and is an array, convert it to a suitable format if needed
+          if (newResponse.dataframe && Array.isArray(newResponse.dataframe)) {
+            // Assuming dataframe is an array of objects, no special conversion needed for display
+          }
+          return newResponse;
+        });
+
+        if (data.status === 'completed' || data.status === 'error') {
+          eventSource.close();
+          setLoading(false);
+          if (data.status === 'error') {
+            setError(data.error || 'An error occurred during streaming.');
+            setNotification({ open: true, message: 'Query failed. Please try again.', severity: 'error' });
+          } else {
+            setNotification({ open: true, message: 'Query completed successfully!', severity: 'success' });
+          }
+        }
+      };
+
+      eventSource.onerror = (err) => {
+        console.error('SSE error:', err);
+        eventSource.close();
+        setLoading(false);
+        setError('An error occurred during streaming.');
+        setNotification({ open: true, message: 'Query failed. Please try again.', severity: 'error' });
+      };
+
     } catch (err) {
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime < minLoadingTime) await new Promise(resolve => setTimeout(resolve, minLoadingTime - elapsedTime));
-      setError('An error occurred while fetching the data.');
-      setNotification({ open: true, message: 'Query failed. Please try again.', severity: 'error' });
-    } finally {
       setLoading(false);
+      setError('Failed to initiate streaming connection.');
+      setNotification({ open: true, message: 'Query failed. Please try again.', severity: 'error' });
     }
   };
 
@@ -331,45 +370,51 @@ function App() {
                 </AnimatePresence>
 
                 <AnimatePresence>
-                  {response && !loading && (
+                  {response && (response.generated_sql_query || response.dataframe || response.insights) && (
                     <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" exit="hidden">
                       <Grid container spacing={3} direction="column">
-                        <Grid item xs={12}>
-                          <motion.div variants={itemVariants}>
-                            <Accordion defaultExpanded>
-                              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography variant="h6" color="primary">Generated SQL Query</Typography>
-                              </AccordionSummary>
-                              <AccordionDetails>
-                                <SqlQueryDisplay sqlQuery={response.generated_sql_query} explanation={response.explanation} />
-                              </AccordionDetails>
-                            </Accordion>
-                          </motion.div>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <motion.div variants={itemVariants}>
-                            <Accordion defaultExpanded>
-                              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography variant="h6" color="primary">Data</Typography>
-                              </AccordionSummary>
-                              <AccordionDetails>
-                                <DataDisplay dataframe={response.dataframe} />
-                              </AccordionDetails>
-                            </Accordion>
-                          </motion.div>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <motion.div variants={itemVariants}>
-                            <Accordion defaultExpanded>
-                              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography variant="h6" color="primary">Insights</Typography>
-                              </AccordionSummary>
-                              <AccordionDetails>
-                                <Insights insights={response.insights} />
-                              </AccordionDetails>
-                            </Accordion>
-                          </motion.div>
-                        </Grid>
+                        {response.generated_sql_query && (
+                          <Grid item xs={12}>
+                            <motion.div variants={itemVariants}>
+                              <Accordion defaultExpanded>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                  <Typography variant="h6" color="primary">Generated SQL Query</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                  <SqlQueryDisplay sqlQuery={response.generated_sql_query} explanation={response.explanation} />
+                                </AccordionDetails>
+                              </Accordion>
+                            </motion.div>
+                          </Grid>
+                        )}
+                        {response.dataframe && (
+                          <Grid item xs={12}>
+                            <motion.div variants={itemVariants}>
+                              <Accordion defaultExpanded>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                  <Typography variant="h6" color="primary">Data</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                  <DataDisplay dataframe={response.dataframe} />
+                                </AccordionDetails>
+                              </Accordion>
+                            </motion.div>
+                          </Grid>
+                        )}
+                        {response.insights && (
+                          <Grid item xs={12}>
+                            <motion.div variants={itemVariants}>
+                              <Accordion defaultExpanded>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                  <Typography variant="h6" color="primary">Insights</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                  <Insights insights={response.insights} />
+                                </AccordionDetails>
+                              </Accordion>
+                            </motion.div>
+                          </Grid>
+                        )}
                       </Grid>
                     </motion.div>
                   )}

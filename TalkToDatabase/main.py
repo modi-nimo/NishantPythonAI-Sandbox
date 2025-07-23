@@ -8,7 +8,9 @@ from agno.models.groq import Groq
 from agno.team import Team
 from dotenv import load_dotenv
 
-from helper import *
+from TalkToDatabase.helper import * # Changed import to be relative to TalkToDatabase
+from pydantic import BaseModel # Added BaseModel import
+import asyncio # Added asyncio import
 
 load_dotenv()
 
@@ -21,6 +23,8 @@ class ApplicationResponseModel(BaseModel):
     explanation: str = None
     dataframe: pd.DataFrame = None
     insights : str = ""
+    # Add a field for the update queue
+    update_queue: asyncio.Queue = None
 
 
 sql_manger = Agent(

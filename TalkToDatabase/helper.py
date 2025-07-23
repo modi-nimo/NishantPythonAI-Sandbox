@@ -13,8 +13,25 @@ from google import genai
 from google.genai import types
 from agno.agent.agent import Agent
 from groq import Groq
+import asyncio # Import asyncio
 
 load_dotenv()
+
+async def _publish_update_to_queue(agent: Agent):
+    update_queue = agent.team_session_state["update_queue"]
+    app_response = agent.team_session_state["application_response"]
+
+    # Create a dictionary with the current state of the application_response
+    # Ensure dataframe is converted to a serializable format
+    current_state = {
+        "user_question": app_response.user_question,
+        "generated_sql_query": app_response.generated_sql_query,
+        "explanation": app_response.explanation,
+        "dataframe": app_response.dataframe.to_dict(orient="records") if app_response.dataframe is not None else None,
+        "insights": app_response.insights
+    }
+    # Put the JSON string into the queue
+    await update_queue.put(json.dumps(current_state))
 
 #
 # from openinference.instrumentation.agno import AgnoInstrumentor
@@ -114,6 +131,7 @@ def debug_sql_query(agent: Agent, error_message:str ) -> str:
     output_response: SQLOutput = llm_response.parsed
     agent.team_session_state["application_response"].generated_sql_query = output_response.generated_sql_query
     agent.team_session_state["application_response"].explanation = output_response.explanation
+    asyncio.run(_publish_update_to_queue(agent)) # Publish update
 
     return output_response.generated_sql_query
 
@@ -126,10 +144,14 @@ def generate_sql_query(agent: Agent) -> str:
     """
     # First we will clean the User Question.
     user_question = agent.team_session_state["application_response"].user_question
+    asyncio.run(_publish_update_to_queue(agent)) # Publish update
 
     cleaned_question = user_question.replace("'", "").replace('"', '').replace("?", "").replace("!", "").strip()
 
     agent.team_session_state["application_response"].user_question = cleaned_question
+    agent.team_session_state["application_response"].generated_sql_query = "Generating Embeddings for the User Question."
+    agent.team_session_state["application_response"].explanation = "Generating Embeddings for the User Question."
+    asyncio.run(_publish_update_to_queue(agent)) # Publish update
 
     # Then we will use the ChromaDB to retrieve the relevant tables and columns.
     client = chromadb.PersistentClient(path="Embeddings/", settings=Settings(anonymized_telemetry=False))
@@ -138,6 +160,9 @@ def generate_sql_query(agent: Agent) -> str:
         query_texts=[cleaned_question],
         n_results=3
     )
+    agent.team_session_state["application_response"].generated_sql_query = "Getting relevant Tables and Columns for the User Question."
+    agent.team_session_state["application_response"].explanation = "Getting relevant Tables and Columns for the User Question."
+    asyncio.run(_publish_update_to_queue(agent))  # Publish update
 
     # Then we will use the retrieved tables and columns to generate the SQL query.
     column_collection = client.get_collection(name="column_names")
@@ -145,6 +170,11 @@ def generate_sql_query(agent: Agent) -> str:
         query_texts=[cleaned_question],
         n_results=5
     )
+
+    agent.team_session_state["application_response"].generated_sql_query = "Getting relevant Examples for the User Question."
+    agent.team_session_state[
+        "application_response"].explanation = "Getting relevant Examples for the User Question."
+    asyncio.run(_publish_update_to_queue(agent))  # Publish update
 
     example_collection = client.get_collection(name="examples")
     example_queries = example_collection.query(
@@ -177,6 +207,10 @@ def generate_sql_query(agent: Agent) -> str:
     * **Bring Relevant Columns:** In the generated SQL query, include only the columns that are relevant to the User Question. Not all columns are required.
     
 """
+    agent.team_session_state["application_response"].generated_sql_query = "Getting SQL based on the User Question."
+    agent.team_session_state[
+        "application_response"].explanation = "Getting SQL based on the User Question."
+    asyncio.run(_publish_update_to_queue(agent))  # Publish update
 
     client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
     llm_response = client.models.generate_content(
@@ -193,6 +227,7 @@ def generate_sql_query(agent: Agent) -> str:
     output_response: SQLOutput = llm_response.parsed
     agent.team_session_state["application_response"].generated_sql_query = output_response.generated_sql_query
     agent.team_session_state["application_response"].explanation = output_response.explanation
+    asyncio.run(_publish_update_to_queue(agent)) # Publish update
 
     return output_response.generated_sql_query
 
@@ -237,11 +272,13 @@ def execute_query(agent: Agent, sql_query: str) -> tuple:
                     rows = cursor.fetchall()
                     df = pd.DataFrame(rows, columns=headers)
                     agent.team_session_state["application_response"].dataframe = df
+                    asyncio.run(_publish_update_to_queue(agent)) # Publish update
                     return headers, rows
                 else:
                     return [], []
     except Exception as e:
         print(f"Error executing query: {e}")
+        asyncio.run(_publish_update_to_queue(agent)) # Publish update
         return ["Error"], [[f"Failed to execute query: {e}"]]
 
 
@@ -393,4 +430,5 @@ def generate_insights(agent: Agent, question: str) -> str:
     )
     content = response.choices[0].message.content
     agent.team_session_state["application_response"].insights = content
+    asyncio.run(_publish_update_to_queue(agent)) # Publish update
     return content
