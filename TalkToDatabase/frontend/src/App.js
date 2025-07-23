@@ -19,9 +19,22 @@ import {
   CircularProgress, // Import CircularProgress for the button
   Tabs, // Import Tabs
   Tab, // Import Tab
+  Drawer, // Import Drawer
+  List, // Import List
+  ListItem, // Import ListItem
+  ListItemIcon, // Import ListItemIcon
+  ListItemText, // Import ListItemText
+  Divider, // Import Divider
+  IconButton, // Import IconButton
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import MenuIcon from '@mui/icons-material/Menu'; // Import MenuIcon
+import Brightness4Icon from '@mui/icons-material/Brightness4'; // Import Dark Mode Icon
+import LightModeIcon from '@mui/icons-material/LightMode'; // Import Light Mode Icon
+import SettingsIcon from '@mui/icons-material/Settings'; // Import Settings Icon
+import HistoryIcon from '@mui/icons-material/History'; // Import History Icon
+import ClearIcon from '@mui/icons-material/Clear'; // Import ClearIcon
 import QueryInput from './components/QueryInput';
 import SqlQueryDisplay from './components/SqlQueryDisplay';
 import DataDisplay from './components/DataDisplay';
@@ -30,13 +43,67 @@ import axios from 'axios';
 import { getAppTheme } from './theme';
 import { motion, AnimatePresence } from 'framer-motion';
 import SchemaViewer from './components/SchemaViewer'; // Import SchemaViewer
+import { styled } from '@mui/material/styles'; // Import styled
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4), // Increased padding
+  borderRadius: theme.shape.borderRadius || 16, // Use theme's new border radius
+  boxShadow: theme.shadows[6], // More pronounced shadow
+  backgroundColor: theme.palette.background.paper,
+  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-8px)', // More pronounced lift on hover
+    boxShadow: theme.shadows[12], // Even more pronounced shadow on hover
+  },
+}));
+
+const HeaderBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between', // Align items to start and end
+  alignItems: 'center',
+  marginBottom: theme.spacing(6), // Increased margin
+  paddingBottom: theme.spacing(3),
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  textAlign: 'center',
+}));
+
+const TitleBox = styled(motion.div)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column', // Stack title and subtitle vertically
+  alignItems: 'flex-start', // Align title to the left
+  gap: theme.spacing(1), // Reduced gap
+}));
+
+const StyledTab = styled(Tab)(({ theme }) => ({
+  minHeight: '56px', // Taller tabs as per theme
+  textTransform: 'none',
+  fontWeight: theme.typography.fontWeightBold, // Bolder text as per theme
+  fontSize: '1.1rem', // Larger font size as per theme
+  '&.Mui-selected': {
+    color: theme.palette.primary.main,
+    fontWeight: theme.typography.fontWeightBold,
+  },
+}));
+
+const StyledTabs = styled(Tabs)(({ theme }) => ({
+  marginBottom: theme.spacing(4), // Increased margin
+  backgroundColor: theme.palette.background.paper, // Use paper background for tabs
+  borderRadius: theme.shape.borderRadius || 16, // Rounded corners for tabs
+  boxShadow: theme.shadows[3], // Subtle shadow for tabs
+  padding: theme.spacing(0, 2), // Padding inside tabs container
+  '& .MuiTabs-indicator': {
+    height: '5px', // Thicker indicator as per theme
+    borderRadius: '5px 5px 0 0',
+    backgroundColor: theme.palette.secondary.main, // Use secondary color for indicator
+  },
+}));
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
+      staggerChildren: 0.1,
     },
   },
 };
@@ -47,7 +114,8 @@ const itemVariants = {
     y: 0,
     opacity: 1,
     transition: {
-      duration: 0.5,
+      duration: 0.4,
+      ease: 'easeOut',
     },
   },
 };
@@ -56,13 +124,14 @@ function App() {
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
-  const [showRoadmapFeatures, setShowRoadmapFeatures] = useState(false); // New state for roadmap features toggle
-  const [activeTab, setActiveTab] = useState(0); // New state for active tab
-  const [dbSchemaContent, setDbSchemaContent] = useState(null); // State to store fetched DB schema
-  const [loadingSchema, setLoadingSchema] = useState(false); // State for schema loading
+  const [showRoadmapFeatures, setShowRoadmapFeatures] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+  const [dbSchemaContent, setDbSchemaContent] = useState(null);
+  const [loadingSchema, setLoadingSchema] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false); // State for controlling the drawer
 
   const theme = useMemo(() => getAppTheme(darkMode ? 'dark' : 'light'), [darkMode]);
 
@@ -81,6 +150,7 @@ function App() {
       const elapsedTime = Date.now() - startTime;
       if (elapsedTime < minLoadingTime) await new Promise(resolve => setTimeout(resolve, minLoadingTime - elapsedTime));
       setError('An error occurred while fetching the data.');
+      setNotification({ open: true, message: 'Query failed. Please try again.', severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -90,10 +160,9 @@ function App() {
     setIsRefreshing(true);
     try {
       const result = await axios.get('http://localhost:8000/refresh_db_schema');
-      // Use the actual response from the API for the notification
       setNotification({ open: true, message: result.data.response || 'Database schema refreshed successfully!', severity: 'success' });
+      setDbSchemaContent(null); // Clear schema content to force re-fetch
     } catch (err) {
-      // Use the detailed error message from the API if available
       const errorMessage = err.response?.data?.detail || 'Failed to refresh database schema.';
       setNotification({ open: true, message: errorMessage, severity: 'error' });
     } finally {
@@ -108,9 +177,8 @@ function App() {
     setNotification({ ...notification, open: false });
   };
 
-  // Fetch database schema when roadmap features are shown and the schema tab is active
   React.useEffect(() => {
-    if (showRoadmapFeatures && activeTab === 1 && !dbSchemaContent && !loadingSchema) {
+    if (showRoadmapFeatures && activeTab === 2 && !dbSchemaContent && !loadingSchema) {
       setLoadingSchema(true);
       axios.get('http://localhost:8000/database_schema')
         .then(response => {
@@ -130,48 +198,113 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+        <HeaderBox>
+          <TitleBox initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                color: 'transparent',
+                backgroundImage: 'linear-gradient(45deg, #BB86FC 30%, #6200EE 90%)', // Purple gradient
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)', // Subtle 3D effect
+                fontWeight: 800, // Make it bolder
+                fontSize: '3rem', // Make it larger
+                letterSpacing: '-0.05em',
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  textShadow: '3px 3px 6px rgba(0, 0, 0, 0.4)',
+                },
+              }}
+            >
               Synapse
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
               Your Natural Language Bridge to Data
             </Typography>
-          </motion.div>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* --- REPLACED ICON WITH A CLEAR BUTTON --- */}
-            <Button
-              variant="outlined"
-              onClick={handleRefreshSchema}
-              disabled={isRefreshing || loading} // Disable if refreshing or a query is running
-              startIcon={isRefreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
-              sx={{ textTransform: 'none' }}
-            >
-              {isRefreshing ? 'Refreshing...' : 'Refresh Schema'}
-            </Button>
-            <FormControlLabel
-              control={<Switch checked={darkMode} onChange={() => setDarkMode(!darkMode)} />}
-              label="Dark Mode"
-            />
-            <FormControlLabel
-              control={<Switch checked={showRoadmapFeatures} onChange={() => setShowRoadmapFeatures(!showRoadmapFeatures)} color="warning" />}
-              label="Roadmap Features"
-            />
-          </Box>
-        </Box>
+          </TitleBox>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="end"
+            onClick={() => setDrawerOpen(true)}
+            sx={{ ml: 2, color: theme.palette.text.primary }}
+          >
+            <MenuIcon />
+          </IconButton>
+        </HeaderBox>
 
-        <Grid container spacing={2}>
+        <Drawer
+          anchor="right"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          PaperProps={{
+            sx: {
+              width: 280,
+              backgroundColor: theme.palette.background.paper,
+              boxShadow: theme.shadows[6],
+            },
+          }}
+        >
+          <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6" color="primary">Settings</Typography>
+            <IconButton onClick={() => setDrawerOpen(false)}>
+              <ClearIcon />
+            </IconButton>
+          </Box>
+          <Divider />
+          <List>
+            <ListItem>
+              <ListItemIcon>
+                {darkMode ? <Brightness4Icon /> : <LightModeIcon />}
+              </ListItemIcon>
+              <FormControlLabel
+                control={<Switch checked={darkMode} onChange={() => setDarkMode(!darkMode)} />}
+                label="Dark Mode"
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <FormControlLabel
+                control={<Switch checked={showRoadmapFeatures} onChange={() => setShowRoadmapFeatures(!showRoadmapFeatures)} color="warning" />}
+                label="Roadmap Features"
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemIcon>
+                <RefreshIcon />
+              </ListItemIcon>
+              <ListItemText>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleRefreshSchema}
+                  disabled={isRefreshing || loading}
+                  startIcon={isRefreshing ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
+                  fullWidth
+                >
+                  {isRefreshing ? 'Refreshing...' : 'Refresh Schema'}
+                </Button>
+              </ListItemText>
+            </ListItem>
+          </List>
+        </Drawer>
+
+        <Grid container spacing={3}>
           <Grid item xs={12}>
-            <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)} sx={{ mb: 2 }}>
-              <Tab label="Query Interface" />
-              {showRoadmapFeatures && <Tab label="Chat History" />}
-              {showRoadmapFeatures && <Tab label="Visualize DB Schema" />}
-            </Tabs>
+            <StyledTabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)}>
+              <StyledTab label="Query Interface" />
+              {showRoadmapFeatures && <StyledTab label="Chat History" />}
+              {showRoadmapFeatures && <StyledTab label="Visualize DB Schema" />}
+            </StyledTabs>
 
             {activeTab === 0 && (
-              <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
-                <Paper sx={{ p: 2, mb: 3, borderRadius: 3, position: 'relative', overflow: 'hidden' }}>
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.1 }}>
+                <StyledPaper sx={{ mb: 3, position: 'relative', overflow: 'hidden' }}>
                   <QueryInput onSubmit={handleQuerySubmit} loading={loading || isRefreshing} />
                   <AnimatePresence>
                     {loading && (
@@ -183,18 +316,16 @@ function App() {
                         transition={{ duration: 0.2 }}
                         style={{ position: 'absolute', bottom: 0, left: 0, width: '100%' }}
                       >
-                        <LinearProgress />
+                        <LinearProgress color="primary" />
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </Paper>
+                </StyledPaper>
 
                 <AnimatePresence>
                   {error && (
                     <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      <Typography color="error" align="center">
-                        {error}
-                      </Typography>
+                      <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -202,12 +333,12 @@ function App() {
                 <AnimatePresence>
                   {response && !loading && (
                     <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" exit="hidden">
-                      <Grid container spacing={2} direction="column">
-                        <Grid item>
+                      <Grid container spacing={3} direction="column">
+                        <Grid item xs={12}>
                           <motion.div variants={itemVariants}>
-                            <Accordion defaultExpanded sx={{ borderRadius: 3, '&:before': { display: 'none' } }}>
+                            <Accordion defaultExpanded>
                               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography variant="h6">Generated SQL Query</Typography>
+                                <Typography variant="h6" color="primary">Generated SQL Query</Typography>
                               </AccordionSummary>
                               <AccordionDetails>
                                 <SqlQueryDisplay sqlQuery={response.generated_sql_query} explanation={response.explanation} />
@@ -215,11 +346,11 @@ function App() {
                             </Accordion>
                           </motion.div>
                         </Grid>
-                        <Grid item>
+                        <Grid item xs={12}>
                           <motion.div variants={itemVariants}>
-                            <Accordion defaultExpanded sx={{ borderRadius: 3, '&:before': { display: 'none' } }}>
+                            <Accordion defaultExpanded>
                               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography variant="h6">Data</Typography>
+                                <Typography variant="h6" color="primary">Data</Typography>
                               </AccordionSummary>
                               <AccordionDetails>
                                 <DataDisplay dataframe={response.dataframe} />
@@ -227,11 +358,11 @@ function App() {
                             </Accordion>
                           </motion.div>
                         </Grid>
-                        <Grid item>
+                        <Grid item xs={12}>
                           <motion.div variants={itemVariants}>
-                            <Accordion defaultExpanded sx={{ borderRadius: 3, '&:before': { display: 'none' } }}>
+                            <Accordion defaultExpanded>
                               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography variant="h6">Insights</Typography>
+                                <Typography variant="h6" color="primary">Insights</Typography>
                               </AccordionSummary>
                               <AccordionDetails>
                                 <Insights insights={response.insights} />
@@ -247,22 +378,22 @@ function App() {
             )}
 
             {activeTab === 1 && showRoadmapFeatures && (
-              <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
-                <Paper sx={{ p: 2, borderRadius: 3, height: '100%' }}>
-                  <Typography variant="h6" gutterBottom>
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.1 }}>
+                <StyledPaper sx={{ height: 'calc(100vh - 250px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                  <Typography variant="h5" color="text.primary" gutterBottom>
                     Chat History
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Chat History will appear here. This section will store your past interactions with the AI assistant.
+                  <Typography variant="body1" color="text.secondary" align="center" sx={{ maxWidth: '600px' }}>
+                    This feature is under development. Soon, you'll be able to review your past conversations and queries here. Stay tuned for updates!
                   </Typography>
-                </Paper>
+                </StyledPaper>
               </motion.div>
             )}
 
             {activeTab === 2 && showRoadmapFeatures && (
-              <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
-                <Paper sx={{ p: 2, borderRadius: 3 }}>
-                  <Typography variant="h6" gutterBottom>
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.1 }}>
+                <StyledPaper>
+                  <Typography variant="h5" color="text.primary" gutterBottom>
                     Database Schema
                   </Typography>
                   <Box sx={{ maxHeight: '600px', overflow: 'auto', bgcolor: 'background.default', p: 2, borderRadius: 2 }}>
@@ -273,18 +404,19 @@ function App() {
                     ) : dbSchemaContent ? (
                       <SchemaViewer schema={dbSchemaContent} />
                     ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        No database schema available or failed to load.
+                      <Typography variant="body1" color="text.secondary" align="center">
+                        No database schema available or failed to load. Click "Refresh Schema" to fetch it.
                       </Typography>
                     )}
                   </Box>
-                </Paper>
+                </StyledPaper>
               </motion.div>
             )}
           </Grid>
         </Grid>
 
-        <Snackbar open={notification.open} autoHideDuration={6000} onClose={handleCloseNotification}>
+        <Snackbar open={notification.open} autoHideDuration={6000} onClose={handleCloseNotification}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
           <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }} variant="filled">
             {notification.message}
           </Alert>

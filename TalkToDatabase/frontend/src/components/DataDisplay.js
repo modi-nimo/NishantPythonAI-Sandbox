@@ -1,17 +1,24 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Typography, Box, useTheme } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 
 const DataDisplay = ({ dataframe }) => {
+  const theme = useTheme();
+
   if (!dataframe || dataframe.length === 0) {
-    return <Typography>No data to display.</Typography>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
+        <Typography variant="body1" color="text.secondary">
+          No data to display.
+        </Typography>
+      </Box>
+    );
   }
 
   const columns = Object.keys(dataframe[0]).map((key) => ({
     field: key,
     headerName: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
     flex: 1,
-    minWidth: 150,
   }));
 
   const rows = dataframe.map((row, index) => ({ id: index, ...row }));
@@ -29,10 +36,26 @@ const DataDisplay = ({ dataframe }) => {
             },
           },
         }}
+        disableRowSelectionOnClick
         sx={{
           border: 'none',
+          backgroundColor: theme.palette.background.paper,
           '& .MuiDataGrid-columnHeaders': {
-            borderBottom: '1px solid rgba(128, 128, 128, 0.2)',
+            backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.background.default,
+            color: theme.palette.text.primary,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          },
+          '& .MuiDataGrid-cell': {
+            borderColor: theme.palette.divider,
+          },
+          '& .MuiDataGrid-row:nth-of-type(odd)': {
+            backgroundColor: theme.palette.mode === 'light' ? theme.palette.action.hover : theme.palette.background.paper,
+          },
+          '& .MuiDataGrid-row:hover': {
+            backgroundColor: theme.palette.action.selected,
+          },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: `1px solid ${theme.palette.divider}`,
           },
         }}
       />
