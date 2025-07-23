@@ -17,6 +17,8 @@ import {
   Snackbar,
   Alert,
   CircularProgress, // Import CircularProgress for the button
+  Tabs, // Import Tabs
+  Tab, // Import Tab
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -27,6 +29,7 @@ import Insights from './components/Insights';
 import axios from 'axios';
 import { getAppTheme } from './theme';
 import { motion, AnimatePresence } from 'framer-motion';
+import SchemaViewer from './components/SchemaViewer'; // Import SchemaViewer
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -56,6 +59,10 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+  const [showRoadmapFeatures, setShowRoadmapFeatures] = useState(false); // New state for roadmap features toggle
+  const [activeTab, setActiveTab] = useState(0); // New state for active tab
+  const [dbSchemaContent, setDbSchemaContent] = useState(null); // State to store fetched DB schema
+  const [loadingSchema, setLoadingSchema] = useState(false); // State for schema loading
 
   const theme = useMemo(() => getAppTheme(darkMode ? 'dark' : 'light'), [darkMode]);
 
@@ -101,6 +108,24 @@ function App() {
     setNotification({ ...notification, open: false });
   };
 
+  // Fetch database schema when roadmap features are shown and the schema tab is active
+  React.useEffect(() => {
+    if (showRoadmapFeatures && activeTab === 1 && !dbSchemaContent && !loadingSchema) {
+      setLoadingSchema(true);
+      axios.get('http://localhost:8000/database_schema')
+        .then(response => {
+          setDbSchemaContent(response.data);
+        })
+        .catch(err => {
+          console.error("Failed to fetch database schema:", err);
+          setNotification({ open: true, message: 'Failed to load database schema.', severity: 'error' });
+        })
+        .finally(() => {
+          setLoadingSchema(false);
+        });
+    }
+  }, [showRoadmapFeatures, activeTab, dbSchemaContent, loadingSchema]);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -129,84 +154,136 @@ function App() {
               control={<Switch checked={darkMode} onChange={() => setDarkMode(!darkMode)} />}
               label="Dark Mode"
             />
+            <FormControlLabel
+              control={<Switch checked={showRoadmapFeatures} onChange={() => setShowRoadmapFeatures(!showRoadmapFeatures)} color="warning" />}
+              label="Roadmap Features"
+            />
           </Box>
         </Box>
-        <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
-          <Paper sx={{ p: 2, mb: 3, borderRadius: 3, position: 'relative', overflow: 'hidden' }}>
-            {/* --- PASS isRefreshing STATE TO DISABLE INPUT --- */}
-            <QueryInput onSubmit={handleQuerySubmit} loading={loading || isRefreshing} />
-            <AnimatePresence>
-              {loading && (
-                <motion.div
-                  key="loader"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  style={{ position: 'absolute', bottom: 0, left: 0, width: '100%' }}
-                >
-                  <LinearProgress />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Paper>
-        </motion.div>
 
-        <AnimatePresence>
-          {error && (
-            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <Typography color="error" align="center">
-                {error}
-              </Typography>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)} sx={{ mb: 2 }}>
+              <Tab label="Query Interface" />
+              {showRoadmapFeatures && <Tab label="Chat History" />}
+              {showRoadmapFeatures && <Tab label="Visualize DB Schema" />}
+            </Tabs>
 
-        <AnimatePresence>
-          {response && !loading && (
-            <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" exit="hidden">
-              <Grid container spacing={2} direction="column">
-                <Grid item>
-                  <motion.div variants={itemVariants}>
-                    <Accordion defaultExpanded sx={{ borderRadius: 3, '&:before': { display: 'none' } }}>
-                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant="h6">Generated SQL Query</Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <SqlQueryDisplay sqlQuery={response.generated_sql_query} explanation={response.explanation} />
-                      </AccordionDetails>
-                    </Accordion>
-                  </motion.div>
-                </Grid>
-                <Grid item>
-                  <motion.div variants={itemVariants}>
-                    <Accordion defaultExpanded sx={{ borderRadius: 3, '&:before': { display: 'none' } }}>
-                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant="h6">Data</Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <DataDisplay dataframe={response.dataframe} />
-                      </AccordionDetails>
-                    </Accordion>
-                  </motion.div>
-                </Grid>
-                <Grid item>
-                  <motion.div variants={itemVariants}>
-                    <Accordion defaultExpanded sx={{ borderRadius: 3, '&:before': { display: 'none' } }}>
-                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant="h6">Insights</Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <Insights insights={response.insights} />
-                      </AccordionDetails>
-                    </Accordion>
-                  </motion.div>
-                </Grid>
-              </Grid>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        {/* --- NOTIFICATION COMPONENT FOR USER FEEDBACK --- */}
+            {activeTab === 0 && (
+              <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
+                <Paper sx={{ p: 2, mb: 3, borderRadius: 3, position: 'relative', overflow: 'hidden' }}>
+                  <QueryInput onSubmit={handleQuerySubmit} loading={loading || isRefreshing} />
+                  <AnimatePresence>
+                    {loading && (
+                      <motion.div
+                        key="loader"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        style={{ position: 'absolute', bottom: 0, left: 0, width: '100%' }}
+                      >
+                        <LinearProgress />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Paper>
+
+                <AnimatePresence>
+                  {error && (
+                    <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      <Typography color="error" align="center">
+                        {error}
+                      </Typography>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {response && !loading && (
+                    <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" exit="hidden">
+                      <Grid container spacing={2} direction="column">
+                        <Grid item>
+                          <motion.div variants={itemVariants}>
+                            <Accordion defaultExpanded sx={{ borderRadius: 3, '&:before': { display: 'none' } }}>
+                              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="h6">Generated SQL Query</Typography>
+                              </AccordionSummary>
+                              <AccordionDetails>
+                                <SqlQueryDisplay sqlQuery={response.generated_sql_query} explanation={response.explanation} />
+                              </AccordionDetails>
+                            </Accordion>
+                          </motion.div>
+                        </Grid>
+                        <Grid item>
+                          <motion.div variants={itemVariants}>
+                            <Accordion defaultExpanded sx={{ borderRadius: 3, '&:before': { display: 'none' } }}>
+                              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="h6">Data</Typography>
+                              </AccordionSummary>
+                              <AccordionDetails>
+                                <DataDisplay dataframe={response.dataframe} />
+                              </AccordionDetails>
+                            </Accordion>
+                          </motion.div>
+                        </Grid>
+                        <Grid item>
+                          <motion.div variants={itemVariants}>
+                            <Accordion defaultExpanded sx={{ borderRadius: 3, '&:before': { display: 'none' } }}>
+                              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="h6">Insights</Typography>
+                              </AccordionSummary>
+                              <AccordionDetails>
+                                <Insights insights={response.insights} />
+                              </AccordionDetails>
+                            </Accordion>
+                          </motion.div>
+                        </Grid>
+                      </Grid>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+
+            {activeTab === 1 && showRoadmapFeatures && (
+              <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
+                <Paper sx={{ p: 2, borderRadius: 3, height: '100%' }}>
+                  <Typography variant="h6" gutterBottom>
+                    Chat History
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Chat History will appear here. This section will store your past interactions with the AI assistant.
+                  </Typography>
+                </Paper>
+              </motion.div>
+            )}
+
+            {activeTab === 2 && showRoadmapFeatures && (
+              <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
+                <Paper sx={{ p: 2, borderRadius: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Database Schema
+                  </Typography>
+                  <Box sx={{ maxHeight: '600px', overflow: 'auto', bgcolor: 'background.default', p: 2, borderRadius: 2 }}>
+                    {loadingSchema ? (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                        <CircularProgress />
+                      </Box>
+                    ) : dbSchemaContent ? (
+                      <SchemaViewer schema={dbSchemaContent} />
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No database schema available or failed to load.
+                      </Typography>
+                    )}
+                  </Box>
+                </Paper>
+              </motion.div>
+            )}
+          </Grid>
+        </Grid>
+
         <Snackbar open={notification.open} autoHideDuration={6000} onClose={handleCloseNotification}>
           <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }} variant="filled">
             {notification.message}

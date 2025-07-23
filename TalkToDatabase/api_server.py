@@ -7,6 +7,9 @@ from TalkToDatabase.helper import refresh_db_schema
 from TalkToDatabase.main import smart_db_team
 from pydantic import BaseModel
 
+from fastapi.responses import StreamingResponse
+import json
+
 load_dotenv()
 
 app = FastAPI()
@@ -67,6 +70,20 @@ def query_db(request: QueryRequest):
                 }
 
     return {"response": response}
+
+@app.get("/database_schema")
+def get_database_schema():
+    """
+    Endpoint to return the content of database_schema.json.
+    """
+    try:
+        with open("database_schema.json", "r") as f:
+            schema_data = json.load(f)
+        return schema_data
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="database_schema.json not found.")
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Error decoding database_schema.json.")
 
 if __name__ == "__main__":
     import uvicorn
