@@ -264,6 +264,7 @@ def execute_query(agent: Agent, sql_query: str) -> tuple:
     """
     try:
         db_url = f"postgresql://{os.environ['POSTGRESQL_USERNAME']}:{os.environ['POSTGRESQL_PASSWORD']}@{os.environ['POSTGRESQL_HOST']}:{os.environ['POSTGRESQL_PORT']}/{os.environ['POSTGRESQL_DATABASE']}"
+        sql_query = sql_query.replace("```sql", "").replace("```", "").strip()  # Clean the SQL query
         with psycopg.connect(db_url) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql_query)
