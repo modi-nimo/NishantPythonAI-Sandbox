@@ -426,7 +426,7 @@ def generate_insights(agent: Agent, question: str) -> str:
             {"role": "user",
              "content": insight_prompt}
         ],
-        model="mistral-saba-24b"
+        model="llama-3.1-8b-instant"
     )
     content = response.choices[0].message.content
     agent.team_session_state["application_response"].insights = content
