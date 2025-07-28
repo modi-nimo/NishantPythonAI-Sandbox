@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware # Import CORSMiddleware
 
-from TalkToDatabase.helper import refresh_db_schema
+from TalkToDatabase.helper import refresh_db_schema, CustomJsonEncoder
 from TalkToDatabase.main import smart_db_team, ApplicationResponseModel # Import ApplicationResponseModel
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
@@ -70,10 +70,10 @@ async def query_generator(query: str, update_queue: asyncio.Queue):
                 "insights": app_response.insights,
                 "status": "completed" # Indicate completion
             }
-            update_queue.put_nowait(json.dumps(final_response))
+            update_queue.put_nowait(json.dumps(final_response, cls=CustomJsonEncoder))
         except Exception as e:
             error_message = {"error": str(e), "status": "error"}
-            update_queue.put_nowait(json.dumps(error_message))
+            update_queue.put_nowait(json.dumps(error_message, cls=CustomJsonEncoder))
         finally:
             # Signal that no more data will be put into the queue
             update_queue.put_nowait(None) # Sentinel value to stop the generator

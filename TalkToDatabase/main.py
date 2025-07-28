@@ -46,7 +46,7 @@ smart_db_team = Team(
     name="SmartDB Team",
     description="A team of agents that can help you with database queries and management.",
     mode="coordinate",
-    members=[sql_manger,insight_generator],
+    members=[sql_manger, insight_generator],
     model=Gemini("gemini-2.5-flash",api_key=os.environ["GOOGLE_API_KEY"]),
     instructions="""
     You will perform the tasks and complete it using appropriate agent. Things to consider while performing the tasks:
@@ -55,6 +55,7 @@ smart_db_team = Team(
     3. If there is any error in the SQL query, use the debug_sql_query tool to debug the query and then execute it.
     4. Perform the debugging of the SQL query max 3 times only. If the query is still not working, then return the error message to the user.
     5. Generate insights based on the dataframe returned by the SQL Manager Agent. Do not use your own knowledge to generate insights. Call the generate_insights tool to generate insights based on the dataframe returned by the SQL Manager Agent.
+    6. Do not write any code in Insights. Its for end-user so keep it clean.
     
     Do not assume any data. The Tools provided by the agents are capable enough to handle the tasks.
     Always check the task to do before routing to an agent.
