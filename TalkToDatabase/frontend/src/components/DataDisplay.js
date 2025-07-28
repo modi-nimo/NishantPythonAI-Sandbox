@@ -1,6 +1,7 @@
 import React from 'react';
-import { Typography, Box, useTheme } from '@mui/material';
+import { Typography, Box, useTheme, Tooltip, IconButton } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'; // Import ContentCopyIcon
 
 const DataDisplay = ({ dataframe }) => {
   const theme = useTheme();
@@ -23,8 +24,31 @@ const DataDisplay = ({ dataframe }) => {
 
   const rows = dataframe.map((row, index) => ({ id: index, ...row }));
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(JSON.stringify(dataframe, null, 2));
+    // You might want to add a Snackbar notification here as well
+  };
+
   return (
-    <Box sx={{ height: 400, width: '100%' }}>
+    <Box sx={{ height: 400, width: '100%', position: 'relative' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 1 }}>
+        <Tooltip title="Copy Dataframe" arrow>
+          <IconButton
+            onClick={handleCopy}
+            size="small"
+            sx={{
+              ml: 1,
+              color: theme.palette.text.secondary,
+              backgroundColor: theme.palette.action.hover,
+              '&:hover': {
+                backgroundColor: theme.palette.action.selected,
+              },
+            }}
+          >
+            <ContentCopyIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
       <DataGrid
         rows={rows}
         columns={columns}

@@ -36,7 +36,8 @@ async def _publish_update_to_queue(agent: Agent):
         "generated_sql_query": app_response.generated_sql_query,
         "explanation": app_response.explanation,
         "dataframe": app_response.dataframe.to_dict(orient="records") if app_response.dataframe is not None else None,
-        "insights": app_response.insights
+        "insights": app_response.insights,
+        "usage_stats": app_response.usage_stats
     }
     # Put the JSON string into the queue
     await update_queue.put(json.dumps(current_state, cls=CustomJsonEncoder))
@@ -235,6 +236,7 @@ def generate_sql_query(agent: Agent) -> str:
     output_response: SQLOutput = llm_response.parsed
     agent.team_session_state["application_response"].generated_sql_query = output_response.generated_sql_query
     agent.team_session_state["application_response"].explanation = output_response.explanation
+    agent.team_session_state["application_response"].usage_stats.append(llm_response.usage_metadata.total_token_count) # Reset dataframe
     asyncio.run(_publish_update_to_queue(agent)) # Publish update
 
     return output_response.generated_sql_query
@@ -281,12 +283,14 @@ def execute_query(agent: Agent, sql_query: str) -> tuple:
                     rows = cursor.fetchall()
                     df = pd.DataFrame(rows, columns=headers)
                     agent.team_session_state["application_response"].dataframe = df
+                    agent.team_session_state["application_response"].usage_stats.append(0)
                     asyncio.run(_publish_update_to_queue(agent)) # Publish update
                     return headers, rows
                 else:
                     return [], []
     except Exception as e:
         print(f"Error executing query: {e}")
+        agent.team_session_state["application_response"].usage_stats.append(0)
         asyncio.run(_publish_update_to_queue(agent)) # Publish update
         return ["Error"], [[f"Failed to execute query: {e}"]]
 
@@ -420,7 +424,8 @@ def generate_insights(agent: Agent, question: str) -> str:
     insight_prompt = f"""You are a business analytics expert. Analyze the given dataframe and the asked User Question. 
     Try to answer the question based on the data provided, and provide any insights that you feel can help to user.
     If you cannot answer the question, just say "I cannot answer this question based on the data provided.".
-
+    Do not write any code in Insights. Its for end-user so keep it clean.
+    
                         User Question:
                         {question}
 
@@ -439,5 +444,6 @@ def generate_insights(agent: Agent, question: str) -> str:
     )
     content = response.choices[0].message.content
     agent.team_session_state["application_response"].insights = content
+    agent.team_session_state["application_response"].usage_stats.append(response.usage.total_tokens)
     asyncio.run(_publish_update_to_queue(agent)) # Publish update
     return content

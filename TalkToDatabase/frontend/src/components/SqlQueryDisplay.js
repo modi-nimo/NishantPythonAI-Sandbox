@@ -29,25 +29,24 @@ const SqlQueryDisplay = ({ sqlQuery, explanation }) => {
 
   return (
     <Box sx={{ position: 'relative' }}>
-      <Tooltip title="Copy SQL Query" arrow>
-        <IconButton
-          onClick={handleCopy}
-          size="small"
-          sx={{
-            position: 'absolute',
-            top: theme.spacing(1),
-            right: theme.spacing(1),
-            zIndex: 1,
-            color: 'rgba(255, 255, 255, 0.7)',
-            backgroundColor: 'rgba(0, 0, 0, 0.3)',
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            },
-          }}
-        >
-          <ContentCopyIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 1 }}>
+        <Tooltip title="Copy SQL Query" arrow>
+          <IconButton
+            onClick={handleCopy}
+            size="small"
+            sx={{
+              ml: 1,
+              color: 'rgba(255, 255, 255, 0.7)',
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              },
+            }}
+          >
+            <ContentCopyIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
       <Box sx={{
         mb: 2,
         '& > pre': {

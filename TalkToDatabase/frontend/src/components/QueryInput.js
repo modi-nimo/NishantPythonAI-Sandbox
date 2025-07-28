@@ -3,19 +3,26 @@ import { TextField, Button, Box, InputAdornment, IconButton } from '@mui/materia
 import SendIcon from '@mui/icons-material/Send';
 import ClearIcon from '@mui/icons-material/Clear'; // Import ClearIcon
 
-const QueryInput = ({ onSubmit, loading }) => {
+const QueryInput = ({ onSubmit, loading, lastQuestion, isInputDisabled, onClearInput }) => {
   const [inputValue, setInputValue] = useState('');
+
+  React.useEffect(() => {
+    if (!isInputDisabled) {
+      setInputValue(''); // Clear input when it's re-enabled
+    }
+  }, [isInputDisabled]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (inputValue.trim()) {
       onSubmit(inputValue);
-      setInputValue(''); // Clear input after submission
+      // The parent component (App.js) will handle setting lastQuestion and disabling input
     }
   };
 
   const handleClearInput = () => {
     setInputValue('');
+    onClearInput(); // Call the clear handler from the parent
   };
 
   return (
@@ -23,14 +30,14 @@ const QueryInput = ({ onSubmit, loading }) => {
       <TextField
         fullWidth
         variant="outlined"
-        label="Query your database in plain English..."
-        value={inputValue}
+        label={isInputDisabled ? "Last Query" : "Query your database in plain English..."}
+        value={isInputDisabled ? lastQuestion : inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        disabled={loading}
+        disabled={loading || isInputDisabled}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              {inputValue && (
+              {(inputValue || lastQuestion) && (
                 <IconButton
                   onClick={handleClearInput}
                   edge="end"
@@ -45,8 +52,8 @@ const QueryInput = ({ onSubmit, loading }) => {
         }}
         sx={{
           '& .MuiOutlinedInput-root': {
-            borderRadius: '10px', // Match theme's TextField borderRadius
-            paddingRight: inputValue ? '0px' : undefined,
+            borderRadius: '10px',
+            paddingRight: (inputValue || lastQuestion) ? '0px' : undefined,
           },
         }}
       />
@@ -55,8 +62,8 @@ const QueryInput = ({ onSubmit, loading }) => {
         variant="contained"
         color="primary"
         endIcon={<SendIcon />}
-        sx={{ height: '56px', borderRadius: '10px', minWidth: '120px' }} // Match theme's Button borderRadius
-        disabled={loading || !inputValue.trim()}
+        sx={{ height: '56px', borderRadius: '10px', minWidth: '120px' }}
+        disabled={loading || !inputValue.trim() || isInputDisabled}
       >
         Send
       </Button>

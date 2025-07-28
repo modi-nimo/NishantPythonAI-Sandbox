@@ -23,6 +23,7 @@ class ApplicationResponseModel(BaseModel):
     explanation: str = None
     dataframe: pd.DataFrame = None
     insights : str = ""
+    usage_stats: list = []
     # Add a field for the update queue
     update_queue: asyncio.Queue = None
 
@@ -54,7 +55,7 @@ smart_db_team = Team(
     2. If you are able to generate a SQL query and execute it, generate the insights based on the dataframe returned by the SQL Manager Agent and try to answer the question.
     3. If there is any error in the SQL query, use the debug_sql_query tool to debug the query and then execute it.
     4. Perform the debugging of the SQL query max 3 times only. If the query is still not working, then return the error message to the user.
-    5. Generate insights based on the dataframe returned by the SQL Manager Agent. Do not use your own knowledge to generate insights. Call the generate_insights tool to generate insights based on the dataframe returned by the SQL Manager Agent.
+    5. Always Generate insights whenever a SQL query is executable, without any error. Do not use your own knowledge to generate insights. Call the generate_insights tool to generate insights.
     6. Do not write any code in Insights. Its for end-user so keep it clean.
     
     Do not assume any data. The Tools provided by the agents are capable enough to handle the tasks.

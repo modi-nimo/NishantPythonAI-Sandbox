@@ -24,25 +24,24 @@ const Insights = ({ insights }) => {
 
   return (
     <Box sx={{ position: 'relative' }}>
-      <Tooltip title="Copy Insights" arrow>
-        <IconButton
-          onClick={handleCopy}
-          size="small"
-          sx={{
-            position: 'absolute',
-            top: theme.spacing(1),
-            right: theme.spacing(1),
-            zIndex: 1,
-            color: theme.palette.text.secondary,
-            backgroundColor: theme.palette.action.hover,
-            '&:hover': {
-              backgroundColor: theme.palette.action.selected,
-            },
-          }}
-        >
-          <ContentCopyIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 1 }}>
+        <Tooltip title="Copy Insights" arrow>
+          <IconButton
+            onClick={handleCopy}
+            size="small"
+            sx={{
+              ml: 1,
+              color: theme.palette.text.secondary,
+              backgroundColor: theme.palette.action.hover,
+              '&:hover': {
+                backgroundColor: theme.palette.action.selected,
+              },
+            }}
+          >
+            <ContentCopyIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
       {insightList.length > 0 ? (
         <Box
           sx={{

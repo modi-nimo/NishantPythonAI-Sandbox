@@ -61,6 +61,11 @@ async def query_generator(query: str, update_queue: asyncio.Queue):
             resp = smart_db_team.run(f"User Question: {query}")
             if len(app_response.insights) == 0:
                 app_response.insights = resp.content
+            final_stats = []
+
+            for x,y in zip(resp.metrics.get("total_tokens", []), app_response.usage_stats):
+                final_stats.append(int(x)+int(y))
+
             # After the team run completes, put a final message or signal
             final_response = {
                 "user_question": app_response.user_question,
@@ -68,6 +73,7 @@ async def query_generator(query: str, update_queue: asyncio.Queue):
                 "explanation": app_response.explanation,
                 "dataframe": app_response.dataframe.to_dict(orient="records") if app_response.dataframe is not None else None,
                 "insights": app_response.insights,
+                "usage_stats": final_stats, # Include usage stats
                 "status": "completed" # Indicate completion
             }
             update_queue.put_nowait(json.dumps(final_response, cls=CustomJsonEncoder))

@@ -39,6 +39,8 @@ import QueryInput from './components/QueryInput';
 import SqlQueryDisplay from './components/SqlQueryDisplay';
 import DataDisplay from './components/DataDisplay';
 import Insights from './components/Insights';
+import UsageStatsDisplay from './components/UsageStatsDisplay'; // Import UsageStatsDisplay
+import UsageStatisticsTab from './components/UsageStatisticsTab'; // Import UsageStatisticsTab
 import axios from 'axios';
 import { getAppTheme } from './theme';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -132,18 +134,23 @@ function App() {
   const [dbSchemaContent, setDbSchemaContent] = useState(null);
   const [loadingSchema, setLoadingSchema] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false); // State for controlling the drawer
+  const [lastSubmittedQuestion, setLastSubmittedQuestion] = useState(''); // New state for persisting question
+  const [isQueryInputDisabled, setIsQueryInputDisabled] = useState(false); // New state for disabling input
 
   const theme = useMemo(() => getAppTheme(darkMode ? 'dark' : 'light'), [darkMode]);
 
   const handleQuerySubmit = async (userQuery) => {
     setLoading(true);
     setError(null);
+    setLastSubmittedQuestion(userQuery); // Persist the question
+    setIsQueryInputDisabled(true); // Disable input
     setResponse({
       user_question: userQuery,
       generated_sql_query: '',
       explanation: '',
       dataframe: null,
-      insights: ''
+      insights: '',
+      usage_stats: [0, 0, 0] // Initialize usage_stats
     }); // Initialize response for streaming
 
     try {
@@ -161,6 +168,12 @@ function App() {
         // Update the response state incrementally
         setResponse(prevResponse => {
           const newResponse = { ...prevResponse, ...data };
+          // Ensure usage_stats is always an array of 3 numbers, defaulting to 0 if not present
+          newResponse.usage_stats = data.usage_stats || prevResponse.usage_stats || [0, 0, 0];
+          if (!Array.isArray(newResponse.usage_stats) || newResponse.usage_stats.length !== 3) {
+            newResponse.usage_stats = [0, 0, 0]; // Fallback if usage_stats is malformed
+          }
+
           // If dataframe is present and is an array, convert it to a suitable format if needed
           if (newResponse.dataframe && Array.isArray(newResponse.dataframe)) {
             // Assuming dataframe is an array of objects, no special conversion needed for display
@@ -171,6 +184,7 @@ function App() {
         if (data.status === 'completed' || data.status === 'error') {
           eventSource.close();
           setLoading(false);
+          setIsQueryInputDisabled(false); // Re-enable input after completion or error
           if (data.status === 'error') {
             setError(data.error || 'An error occurred during streaming.');
             setNotification({ open: true, message: 'Query failed. Please try again.', severity: 'error' });
@@ -184,15 +198,22 @@ function App() {
         console.error('SSE error:', err);
         eventSource.close();
         setLoading(false);
+        setIsQueryInputDisabled(false); // Re-enable input on error
         setError('An error occurred during streaming.');
         setNotification({ open: true, message: 'Query failed. Please try again.', severity: 'error' });
       };
 
     } catch (err) {
       setLoading(false);
+      setIsQueryInputDisabled(false); // Re-enable input on catch
       setError('Failed to initiate streaming connection.');
       setNotification({ open: true, message: 'Query failed. Please try again.', severity: 'error' });
     }
+  };
+
+  const handleClearQueryInput = () => {
+    setLastSubmittedQuestion('');
+    setIsQueryInputDisabled(false);
   };
 
   const handleRefreshSchema = async () => {
@@ -337,6 +358,7 @@ function App() {
           <Grid item xs={12}>
             <StyledTabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)}>
               <StyledTab label="Query Interface" />
+              <StyledTab label="Usage Statistics" />
               {showRoadmapFeatures && <StyledTab label="Chat History" />}
               {showRoadmapFeatures && <StyledTab label="Visualize DB Schema" />}
             </StyledTabs>
@@ -344,7 +366,13 @@ function App() {
             {activeTab === 0 && (
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.1 }}>
                 <StyledPaper sx={{ mb: 3, position: 'relative', overflow: 'hidden' }}>
-                  <QueryInput onSubmit={handleQuerySubmit} loading={loading || isRefreshing} />
+                  <QueryInput
+                    onSubmit={handleQuerySubmit}
+                    loading={loading || isRefreshing}
+                    lastQuestion={lastSubmittedQuestion}
+                    isInputDisabled={isQueryInputDisabled}
+                    onClearInput={handleClearQueryInput}
+                  />
                   <AnimatePresence>
                     {loading && (
                       <motion.div
@@ -378,7 +406,12 @@ function App() {
                             <motion.div variants={itemVariants}>
                               <Accordion defaultExpanded>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                  <Typography variant="h6" color="primary">Generated SQL Query</Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                    <Typography variant="h6" color="primary" sx={{ flexGrow: 1 }}>Generated SQL Query</Typography>
+                                    {response.usage_stats && response.usage_stats[0] !== undefined && (
+                                      <UsageStatsDisplay label="SQL Query" count={response.usage_stats[0]} />
+                                    )}
+                                  </Box>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                   <SqlQueryDisplay sqlQuery={response.generated_sql_query} explanation={response.explanation} />
@@ -392,7 +425,12 @@ function App() {
                             <motion.div variants={itemVariants}>
                               <Accordion defaultExpanded>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                  <Typography variant="h6" color="primary">Data</Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                    <Typography variant="h6" color="primary" sx={{ flexGrow: 1 }}>Data</Typography>
+                                    {response.usage_stats && response.usage_stats[1] !== undefined && (
+                                      <UsageStatsDisplay label="Dataframe" count={response.usage_stats[1]} />
+                                    )}
+                                  </Box>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                   <DataDisplay dataframe={response.dataframe} />
@@ -406,7 +444,12 @@ function App() {
                             <motion.div variants={itemVariants}>
                               <Accordion defaultExpanded>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                  <Typography variant="h6" color="primary">Insights</Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                    <Typography variant="h6" color="primary" sx={{ flexGrow: 1 }}>Insights</Typography>
+                                    {response.usage_stats && response.usage_stats[2] !== undefined && (
+                                      <UsageStatsDisplay label="Insights" count={response.usage_stats[2]} />
+                                    )}
+                                  </Box>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                   <Insights insights={response.insights} />
@@ -422,7 +465,15 @@ function App() {
               </motion.div>
             )}
 
-            {activeTab === 1 && showRoadmapFeatures && (
+            {activeTab === 1 && (
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.1 }}>
+                <StyledPaper>
+                  <UsageStatisticsTab usageStats={response?.usage_stats} />
+                </StyledPaper>
+              </motion.div>
+            )}
+
+            {activeTab === 2 && showRoadmapFeatures && (
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.1 }}>
                 <StyledPaper sx={{ height: 'calc(100vh - 250px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                   <Typography variant="h5" color="text.primary" gutterBottom>
@@ -435,7 +486,7 @@ function App() {
               </motion.div>
             )}
 
-            {activeTab === 2 && showRoadmapFeatures && (
+            {activeTab === 3 && showRoadmapFeatures && (
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.1 }}>
                 <StyledPaper>
                   <Typography variant="h5" color="text.primary" gutterBottom>
