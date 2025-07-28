@@ -1,7 +1,7 @@
 import json
 import os
 import pprint
-
+import decimal # Import decimal
 import pandas as pd
 from chromadb import Settings
 from dotenv import load_dotenv
@@ -17,6 +17,14 @@ import asyncio # Import asyncio
 
 load_dotenv()
 
+class CustomJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
+        if isinstance(obj, pd.Timestamp): # Handle Timestamp objects
+            return obj.isoformat()
+        return super(CustomJsonEncoder, self).default(obj)
+
 async def _publish_update_to_queue(agent: Agent):
     update_queue = agent.team_session_state["update_queue"]
     app_response = agent.team_session_state["application_response"]
@@ -31,7 +39,7 @@ async def _publish_update_to_queue(agent: Agent):
         "insights": app_response.insights
     }
     # Put the JSON string into the queue
-    await update_queue.put(json.dumps(current_state))
+    await update_queue.put(json.dumps(current_state, cls=CustomJsonEncoder))
 
 #
 # from openinference.instrumentation.agno import AgnoInstrumentor
@@ -264,7 +272,7 @@ def execute_query(agent: Agent, sql_query: str) -> tuple:
     """
     try:
         db_url = f"postgresql://{os.environ['POSTGRESQL_USERNAME']}:{os.environ['POSTGRESQL_PASSWORD']}@{os.environ['POSTGRESQL_HOST']}:{os.environ['POSTGRESQL_PORT']}/{os.environ['POSTGRESQL_DATABASE']}"
-        sql_query = sql_query.replace("```sql", "").replace("```", "").strip()  # Clean the SQL query
+        # sql_query = sql_query.replace("```sql", "").replace("```", "").strip()  # Clean the SQL query
         with psycopg.connect(db_url) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql_query)
