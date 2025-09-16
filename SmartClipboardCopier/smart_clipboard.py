@@ -16,8 +16,8 @@ import pyperclip
 from loguru import logger
 
 history = []
-
-logger.add("copied_data_{time}.log", format="{time} {level} {message}", colorize=True)
+file_name = f"copied_data_{time.strftime('%Y%m%d')}.log"
+logger.add(sink=file_name, format="{time} {level} {message}", colorize=True)
 def clipboard_logger():
     recent_value = ""
     while True:
