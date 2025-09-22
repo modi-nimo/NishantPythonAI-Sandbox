@@ -1,0 +1,33 @@
+# --- Stage 1: Build the production bundle ---
+    FROM node:20-alpine AS build
+
+    WORKDIR /app
+
+    # Install all dependencies (including devDependencies)
+    COPY client/package*.json ./
+    RUN npm install
+
+    # Copy all source code
+    COPY client/ .
+
+    # Build the production bundle
+    RUN npm run build
+
+    # --- Stage 2: Serve the production build ---
+    # --- Stage 2: Serve the production build with Nginx ---
+    FROM nginx:alpine AS frontend-final
+
+    # Install curl for health checks
+    RUN apk add --no-cache curl
+
+    # Copy the custom Nginx configuration
+    COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+    # Copy the built files from the previous stage to the Nginx web root
+    COPY --from=build /app/dist /usr/share/nginx/html
+
+    # Expose the port Nginx is listening on
+    EXPOSE 80
+
+    # Command to start Nginx
+    CMD ["nginx", "-g", "daemon off;"]
