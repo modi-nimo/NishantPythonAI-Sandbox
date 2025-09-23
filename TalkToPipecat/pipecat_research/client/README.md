@@ -25,3 +25,6 @@ npm run dev
 ```
 
 5. Visit http://localhost:5173 in your browser.
+
+While deploying via Docker, 
+change client/src/app.ts , instead of /connect, make it /api/connect .
