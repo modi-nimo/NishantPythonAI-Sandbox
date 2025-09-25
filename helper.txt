@@ -1,0 +1,14 @@
+https://www.youtube.com/watch?v=wjeAYO6e4ac
+
+Tunneling Options:
+https://pinggy.io/ - Free Tunneling
+https://localxpose.io/pricing
+https://zrok.io/
+https://localhost.run/
+https://serveo.net/
+
+Deployment Options:
+https://vercel.com/pricing
+https://www.netlify.com/pricing/#pricing-table
+
+vapi
