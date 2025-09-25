@@ -1,0 +1,25 @@
+Following are the things we did in this v02:
+- Replaced the FastAPI server with DailyTransport layer.
+
+pipecat_server.py
+- The /connect endpoint was updated to handle dynamic room creation. If no room URL is provided by the user, a new room is created.
+- A new function, get_meeting_token, was added to generate a valid authentication token for the bot. This token is used by the bot to join the room.
+- The websocket_endpoint was modified to accept the new meeting_token parameter.
+- An event handler was added to delete a dynamically created room when the bot disconnects.
+- The /connect endpoint now returns both the bot's WebSocket URL and the final room URL to the frontend.
+
+pipecat_research_main.py
+
+- The run_bot function was updated to accept the meeting_token from the pipecat_server. This ensures the bot can join any room, whether dynamic or pre-existing.
+- The logic for configuring the DailyTransport was changed to pass the meeting_token directly.
+- A check was added to the on_client_disconnected event handler to determine if the room was dynamically created. If so, a call is made to the /delete_daily_room endpoint on pipecat_server.py to clean up the room.
+
+prebuilt_daily.html
+
+- The script now dynamically changes the "Connect" button text to "Connect Dynamic Room" when the room URL input field is empty.
+- The fetch call to the /connect endpoint was updated to pass the is_dynamic_room flag.
+- The script was modified to handle the case where the backend returns the dynamic room URL. It now uses this URL to join the Daily.co frame, ensuring both the user and the bot join the same room.
+- The fetch URL was updated to point directly to http://localhost:7860, bypassing the Nginx proxy for local development.
+
+- Removed Docker files for simplicity.
+- Removed the React frontend and replaced with Simple HTML frontend.
