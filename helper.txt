@@ -11,4 +11,5 @@ Deployment Options:
 https://vercel.com/pricing
 https://www.netlify.com/pricing/#pricing-table
 
-vapi
+Other Options:
+Webhook site - https://webhook.site/ - This allows you to create a temporary URL to test webhooks and inspect the requests.

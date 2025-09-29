@@ -1,0 +1,6 @@
+1. Setting up Livekit.
+
+How to run UI:
+Goto livekit_v01/
+pnpm install
+pnpm dev
