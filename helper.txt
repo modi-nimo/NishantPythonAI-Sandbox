@@ -13,3 +13,11 @@ https://www.netlify.com/pricing/#pricing-table
 
 Other Options:
 Webhook site - https://webhook.site/ - This allows you to create a temporary URL to test webhooks and inspect the requests.
+
+Metrics and Monitoring -
+https://prometheus.io/ - An open-source systems monitoring and alerting toolkit.
+
+Links to explore:
+https://github.com/hiyouga/LLaMA-Factory/?utm_source=newsletter.theresanaiforthat.com&utm_medium=newsletter&utm_campaign=chatgpt-becomes-an-app-store&_bhlid=7473121b616748961b4e5c7fce99fb96e4212eb0
+https://github.com/safety-research/petri/?utm_source=newsletter.theresanaiforthat.com&utm_medium=newsletter&utm_campaign=chatgpt-becomes-an-app-store&_bhlid=30ee8fca440be8c191a780486e00e20a9e170e7d
+https://fish.audio/developers/
