@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 const App = () => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [scrollY, setScrollY] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
@@ -153,7 +153,7 @@ const App = () => {
   };
 
   return (
-    <div className={`${isDarkMode ? 'bg-[#050505] text-[#e5e5e5]' : 'bg-[#f7f7f7] text-[#111]'} min-h-screen
+    <div className={`${isDarkMode ? 'bg-[#0B0E14] text-[#E2E8F0]' : 'bg-[#F8FAFC] text-[#111]'} min-h-screen
     transition-colors duration-1000 font-sans selection:bg-blue-600 overflow-x-hidden relative`}>
 
       {/* --- TEXTURE --- */}
@@ -180,25 +180,26 @@ const App = () => {
         style={{ left: mousePos.x - 8, top: mousePos.y - 8, transform: `scale(${scrollY > 100 ? 1.5 : 2})` }} />
 
       {/* --- NAVIGATION --- */}
-      <nav className="fixed top-0 w-full z-50 p-6 md:p-10 flex justify-between items-center mix-blend-difference">
+      <nav className={`fixed top-0 w-full z-50 px-8 py-6 md:px-12 md:py-8 flex justify-between items-center backdrop-blur-md transition-all duration-500
+        ${isDarkMode ? 'bg-[#0B0E14]/80 border-b border-white/5' : 'bg-[#F8FAFC]/80 border-b border-black/5'}`}>
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-bold tracking-[0.5em] text-white">NISHANT MODI // PORTFOLIO '26</span>
+          <span className={`text-[10px] font-bold tracking-[0.5em] transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>NISHANT MODI // PORTFOLIO '26</span>
           <span className="text-[10px] text-zinc-500 font-mono tracking-widest">ARCHITECTURE & INTELLIGENCE</span>
         </div>
         <div className="flex gap-10 items-center">
-          <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-[10px] font-bold tracking-[0.4em]
-                    uppercase text-white hover:opacity-50 transition-opacity">
+          <button onClick={() => setIsDarkMode(!isDarkMode)} className={`text-[10px] font-bold tracking-[0.4em]
+                    uppercase hover:opacity-50 transition-all ${isDarkMode ? 'text-white' : 'text-black'}`}>
             {isDarkMode ? "Light" : "Dark"}
           </button>
           <a href={profile.linkedin} target="_blank" rel="noreferrer"
-            className="text-white hover:text-blue-500 transition-all">
+            className={`transition-all ${isDarkMode ? 'text-white hover:text-blue-400' : 'text-black hover:text-blue-600'}`}>
             <Linkedin size={18} />
           </a>
         </div>
       </nav>
 
       {/* --- HERO --- */}
-      <header className="relative h-screen flex flex-col justify-center px-6 md:px-24 max-w-7xl mx-auto w-full">
+      <header className="relative h-screen flex flex-col justify-center px-8 md:px-24 max-w-7xl mx-auto w-full pt-20">
         <div className="z-20">
           <div className="flex items-center gap-4 mb-8 animate-reveal">
             <div
@@ -219,7 +220,7 @@ const App = () => {
           </h1>
           <div className="max-w-3xl">
             <p
-              className="text-xl md:text-2xl font-medium leading-relaxed opacity-80 border-l-2 border-blue-600 pl-6 md:pl-8">
+              className="text-xl md:text-2xl font-medium leading-loose opacity-80 border-l-2 border-blue-600 pl-6 md:pl-8">
               {profile.summary}
             </p>
           </div>
@@ -233,7 +234,7 @@ const App = () => {
       </header>
 
       {/* --- EXPERTISE --- */}
-      <section className="py-24 px-6 md:px-24 border-y border-zinc-800/50 relative z-20 max-w-7xl mx-auto w-full">
+      <section className="py-24 px-8 md:px-24 border-y border-zinc-800/50 relative z-20 max-w-7xl mx-auto w-full">
         <h2
           className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
           <Network size={16} /> Architectural Focus
@@ -243,7 +244,7 @@ const App = () => {
             <div key={i} className="group relative">
               <div
                 className={`mb-10 w-16 h-16 rounded-3xl flex items-center justify-center group-hover:bg-blue-600 transition-all duration-500 transform group-hover:rotate-12 group-hover:scale-110 shadow-2xl
-                ${isDarkMode ? 'bg-zinc-900' : 'bg-zinc-100'}`}>
+                ${isDarkMode ? 'bg-zinc-900 shadow-lg shadow-black/20' : 'bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]'}`}>
                 {item.icon}
               </div>
               <h3 className="text-2xl font-bold mb-4 tracking-tighter">{item.title}</h3>
@@ -255,7 +256,7 @@ const App = () => {
       </section>
 
       {/* --- PROJECTS --- */}
-      <section className="py-24 px-6 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section className="py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
         <div className="flex justify-between items-end mb-24">
           <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase">Selected Works</h2>
           <p className="text-[10px] font-mono opacity-30 uppercase tracking-[0.2em]">Scale / Intelligence / Impact
@@ -264,8 +265,8 @@ const App = () => {
         <div className="space-y-0">
           {profile.projects.map((proj, i) => (
             <div key={i}
-              className={`group py-20 border-b flex flex-col md:flex-row md:items-center justify-between transition-all duration-700 cursor-pointer overflow-hidden
-              ${isDarkMode ? 'border-zinc-800/30 hover:bg-white/[0.01]' : 'border-zinc-200 hover:bg-white'}`}>
+              className={`group py-20 border-b flex flex-col md:flex-row md:items-center justify-between transition-all duration-500 cursor-pointer overflow-hidden
+              ${isDarkMode ? 'border-zinc-800/30 hover:bg-white/[0.02] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)]' : 'border-zinc-200 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5'}`}>
               <div className="flex items-center gap-12">
                 <span
                   className="text-xs font-mono opacity-20 group-hover:opacity-100 transition-all">{proj.id}</span>
@@ -283,7 +284,7 @@ const App = () => {
       </section>
 
       {/* --- PROFESSIONAL TIMELINE --- */}
-      <section className="py-24 px-6 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section className="py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
         <h2
           className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
           <Terminal size={16} /> Professional Trajectory
@@ -327,21 +328,21 @@ const App = () => {
       </section>
 
       {/* --- STACK --- */}
-      <section className="py-24 px-6 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section className="py-24 px-8 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-24 relative z-20 max-w-7xl mx-auto w-full">
         <div>
           <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-12">The Ecosystem</h2>
           <div className="flex flex-wrap gap-4">
             {profile.stack.map((tech, i) => (
               <span key={i}
-                className={`px-8 py-4 rounded-[20px] border font-bold text-xl hover:bg-blue-600 transition-all hover:-translate-y-2 cursor-default
-                ${isDarkMode ? 'bg-zinc-900 border-white/5' : 'bg-zinc-100 border-black/5'}`}>
+                className={`px-8 py-4 rounded-[20px] border font-bold text-xl hover:bg-blue-600 hover:border-blue-500 hover:text-white transition-all hover:-translate-y-2 cursor-default
+                ${isDarkMode ? 'bg-zinc-900/50 border-white/5 text-zinc-400' : 'bg-white border-black/5 text-zinc-600 shadow-sm'}`}>
                 {tech}
               </span>
             ))}
           </div>
         </div>
         <div className={`p-12 rounded-[40px] border flex flex-col justify-center
-          ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-gradient-to-br from-zinc-50 to-zinc-100 border-black/5'}`}>
+          ${isDarkMode ? 'bg-[#0B0E14] border-white/5 shadow-2xl shadow-black/50' : 'bg-white border-zinc-100 shadow-[0_20px_40px_rgba(0,0,0,0.04)]'}`}>
           <h2
             className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-12 flex items-center gap-2">
             <Users size={14} className="text-blue-500" /> Human Impact
@@ -356,7 +357,7 @@ const App = () => {
       </section>
 
       {/* --- FOOTER --- */}
-      <footer className="py-60 px-6 md:px-24 text-center relative z-20">
+      <footer className="py-60 px-8 md:px-24 text-center relative z-20">
         <div className="mb-24">
           <p className="text-[10px] font-bold tracking-[0.8em] text-blue-500 uppercase mb-8">Initiate Connection
           </p>
@@ -376,7 +377,6 @@ const App = () => {
             <a href={profile.linkedin} target="_blank"
               className="hover:text-blue-500 transition-colors uppercase">LinkedIn</a>
             <a href="#" className="hover:text-blue-500 transition-colors uppercase">GitHub</a>
-            <a href="#" className="hover:text-blue-500 transition-colors uppercase">Resume_2026.pdf</a>
           </div>
           <p className="mt-32 text-[10px] opacity-10 font-mono uppercase tracking-[0.5em]">
             © {new Date().getFullYear()} NISHANT MODI • PUNE • ARCHITECTING AUTONOMY
