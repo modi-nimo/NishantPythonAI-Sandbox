@@ -184,7 +184,7 @@ const App = () => {
         ${isDarkMode ? 'bg-[#0B0E14]/80 border-b border-white/5' : 'bg-[#F8FAFC]/80 border-b border-black/5'}`}>
         <div className="flex flex-col gap-1">
           <span className={`text-[10px] font-bold tracking-[0.5em] transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>NISHANT MODI // PORTFOLIO '26</span>
-          <span className="text-[10px] text-zinc-500 font-mono tracking-widest">ARCHITECTURE & INTELLIGENCE</span>
+          <span className="hidden md:inline-block text-[10px] text-zinc-500 font-mono tracking-widest">ARCHITECTURE & INTELLIGENCE</span>
         </div>
         <div className="flex gap-10 items-center">
           <button onClick={() => setIsDarkMode(!isDarkMode)} className={`text-[10px] font-bold tracking-[0.4em]
@@ -234,7 +234,7 @@ const App = () => {
       </header>
 
       {/* --- EXPERTISE --- */}
-      <section className="py-24 px-8 md:px-24 border-y border-zinc-800/50 relative z-20 max-w-7xl mx-auto w-full">
+      <section className="py-12 md:py-24 px-8 md:px-24 border-y border-zinc-800/50 relative z-20 max-w-7xl mx-auto w-full">
         <h2
           className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
           <Network size={16} /> Architectural Focus
@@ -256,7 +256,7 @@ const App = () => {
       </section>
 
       {/* --- PROJECTS --- */}
-      <section className="py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
         <div className="flex justify-between items-end mb-24">
           <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase">Selected Works</h2>
           <p className="text-[10px] font-mono opacity-30 uppercase tracking-[0.2em]">Scale / Intelligence / Impact
@@ -265,7 +265,7 @@ const App = () => {
         <div className="space-y-0">
           {profile.projects.map((proj, i) => (
             <div key={i}
-              className={`group py-20 border-b flex flex-col md:flex-row md:items-center justify-between transition-all duration-500 cursor-pointer overflow-hidden
+              className={`group py-12 md:py-20 border-b flex flex-col md:flex-row md:items-center justify-between transition-all duration-500 cursor-pointer overflow-hidden
               ${isDarkMode ? 'border-zinc-800/30 hover:bg-white/[0.02] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)]' : 'border-zinc-200 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5'}`}>
               <div className="flex items-center gap-12">
                 <span
@@ -284,7 +284,7 @@ const App = () => {
       </section>
 
       {/* --- PROFESSIONAL TIMELINE --- */}
-      <section className="py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
         <h2
           className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
           <Terminal size={16} /> Professional Trajectory
@@ -303,7 +303,7 @@ const App = () => {
                 {exp.roles.map((role, j) => (
                   <div key={j} className="group">
                     <div className="flex items-center gap-6 mb-8">
-                      <h4 className="text-2xl font-bold tracking-tighter">{role.title}</h4>
+                      <h4 className="text-xl md:text-2xl font-bold tracking-tighter">{role.title}</h4>
                       <div className={`h-[1px] flex-1 ${isDarkMode ? 'bg-zinc-900' : 'bg-zinc-200'}`} />
                     </div>
                     <ul className="space-y-10">
@@ -312,7 +312,7 @@ const App = () => {
                           <span
                             className="text-blue-500 font-bold opacity-0 group-hover/item:opacity-100 transition-opacity translate-x-[-10px] group-hover/item:translate-x-0 transition-transform">→</span>
                           <p
-                            className={`text-2xl md:text-3xl font-medium text-zinc-500 transition-colors duration-500 tracking-tight leading-snug
+                            className={`text-xl md:text-3xl font-medium text-zinc-500 transition-colors duration-500 tracking-tight leading-snug
                             ${isDarkMode ? 'group-hover/item:text-[#eee]' : 'group-hover/item:text-black'}`}>
                             {detail}
                           </p>
@@ -328,7 +328,7 @@ const App = () => {
       </section>
 
       {/* --- STACK --- */}
-      <section className="py-24 px-8 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section className="py-12 md:py-24 px-8 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-24 relative z-20 max-w-7xl mx-auto w-full">
         <div>
           <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-12">The Ecosystem</h2>
           <div className="flex flex-wrap gap-4">
@@ -357,7 +357,7 @@ const App = () => {
       </section>
 
       {/* --- FOOTER --- */}
-      <footer className="py-60 px-8 md:px-24 text-center relative z-20">
+      <footer className="py-32 md:py-60 px-8 md:px-24 text-center relative z-20">
         <div className="mb-24">
           <p className="text-[10px] font-bold tracking-[0.8em] text-blue-500 uppercase mb-8">Initiate Connection
           </p>
