@@ -172,3 +172,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+GanpatiReceipt
+.webui_secret_key
+.codefixer/
+.idea
+Exprimentation
+FaceImageGenerator
+MCP_Exprimentation
+TalkToDatabase
+TalkToPipecat

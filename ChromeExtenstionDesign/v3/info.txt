@@ -1,5 +1,0 @@
-This will convert voice input, convert to text , take the HTML page and perform that action.
-
-Run below command:
-
-OLLAMA_HOST=0.0.0.0 OLLAMA_ORIGINS=chrome-extension://* ollama serve
