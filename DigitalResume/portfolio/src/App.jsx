@@ -23,12 +23,14 @@ import {
   Database,
   Network
 } from 'lucide-react';
+import RaceTrack from './components/RaceTrack';
 
 const App = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [scrollY, setScrollY] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
+  const [expandedProject, setExpandedProject] = useState(null);
 
   // Visual simulation of system cycles
   useEffect(() => {
@@ -133,23 +135,85 @@ const App = () => {
           {
             title: "Senior Software Engineer",
             details: [
-              "Architected robust, data-dense backends for Hitachi, specializing in MongoDB optimization and real-time distributed processing.",
-              "Engineered state-of-the-art CI/CD pipelines that turned release days from a stressor into a non-event through radical automation."
+              "Led automation initiatives for the 'Hitachi Deployment Manager', scripting custom OVAs and deploying nodes in customer VCenters.",
+              "Executed security hardening for CentOS/Linux environments to meet strict enterprise compliance standards.",
+              "Architected robust RESTful integrations for database management systems, surpassing client performance expectations."
             ]
           }
         ]
       }
     ],
 
+    // Education (Added from Resume)
+    education: [
+      {
+        degree: "B.E. Information Technology",
+        school: "University of Pune",
+        period: "2010 — 2014",
+        details: "Achieved 1st Rank in Software Development Contest at COEP."
+      }
+    ],
+
     // Rewritten Projects
     projects: [
       {
-        id: "01", name: "WINGMAN", desc: "A revolutionary NL2SQL interface that grants analysts the power to converse with massive datasets through natural language.", impact: "Adopted as the primary intelligence layer for Deloitte Analysts."
+        id: "01",
+        name: "WINGMAN",
+        company: "Deloitte (via Globant)",
+        desc: "A revolutionary NL2SQL interface that grants analysts the power to converse with massive datasets through natural language.",
+        impact: "Adopted as the primary intelligence layer for Deloitte Analysts.",
+        tech: ["OpenAI", "LangChain", "Vector DB", "React"]
       },
-      { id: "02", name: "VOICE AI", desc: "A conversational bot with emotional intelligence, bridging the gap between human empathy and automated decision-making.", impact: "A next-gen replacement for enterprise call-center logic." },
-      { id: "03", name: "VALUED", desc: "A high-speed valuation engine utilizing Pythonic concurrency to automate complex financial modeling with millisecond precision.", impact: "Streamlined Deloitte's valuation services globally." }
+      {
+        id: "02",
+        name: "VOICE AI",
+        company: "Enterprise Client",
+        desc: "A conversational bot with emotional intelligence, bridging the gap between human empathy and automated decision-making.",
+        impact: "A next-gen replacement for enterprise call-center logic.",
+        tech: ["AWS Transcribe", "Python", "Twilio", "Redis"]
+      },
+      {
+        id: "03",
+        name: "VALUED",
+        company: "Deloitte (via Globant)",
+        desc: "A high-speed valuation engine utilizing Pythonic concurrency to automate complex financial modeling with millisecond precision.",
+        impact: "Streamlined Deloitte's valuation services globally.",
+        tech: ["FastAPI", "Pandas", "Celery", "React"]
+      },
+      {
+        id: "04",
+        name: "HITACHI OPS",
+        company: "Hitachi (via Xoriant)",
+        desc: "Automated configuration of mission-critical Datastore nodes. Implemented security hardening and OVA deployment scripts.",
+        impact: "Zero-touch deployment for global data centers.",
+        tech: ["Docker", "Python", "Bash", "VMware API"]
+      },
+      {
+        id: "05",
+        name: "ACME FIXED",
+        company: "Cisco Systems (via Xoriant)",
+        desc: "Architected a Python-Oracle middleware to modernize legacy SVN workflows, significantly reducing version control overhead.",
+        impact: "Optimized version control workflows for enterprise scale.",
+        tech: ["Flask", "Python", "Oracle 12c", "SVN"]
+      },
+      {
+        id: "06",
+        name: "LENDING CALC",
+        company: "Lending Club (via Xoriant)",
+        desc: "Engineered algorithmic investment scripts to automate portfolio management and maximize yield for high-volume users.",
+        impact: "Automated investment strategies for scale.",
+        tech: ["Python", "Automation", "Finance API"]
+      },
+      {
+        id: "07",
+        name: "T-HUB 365",
+        company: "SAP (via Xoriant)",
+        desc: "Built the automated testing backbone for SAP's high-throughput messaging hub, ensuring zero-defect releases for critical infrastructure.",
+        impact: "Ensured 99.9% reliability for critical messaging hubs.",
+        tech: ["Python", "Testing Framework", "SAP API"]
+      }
     ],
-    stack: ["Python", "FastAPI", "GCP", "AWS", "Agentic AI", "LangChain", "Agno", "Kubernetes", "RAG"]
+    stack: ["Python", "FastAPI", "GCP", "AWS", "Agentic AI", "LangChain", "Agno", "Kubernetes", "RAG", "Docker", "Linux", "Django", "Jenkins"]
   };
 
   return (
@@ -179,9 +243,17 @@ const App = () => {
       <div className="fixed w-4 h-4 bg-blue-600 rounded-full pointer-events-none z-[9999] transition-transform duration-200 ease-out mix-blend-difference"
         style={{ left: mousePos.x - 8, top: mousePos.y - 8, transform: `scale(${scrollY > 100 ? 1.5 : 2})` }} />
 
+      {/* --- RACE TRACK SIDEBAR --- */}
+      <RaceTrack
+        scrollPercentage={Math.min(scrollY / (document.documentElement.scrollHeight - window.innerHeight || 1), 1)}
+        isDarkMode={isDarkMode}
+      />
+
+      {/* --- NAVIGATION --- */}
       {/* --- NAVIGATION --- */}
       <nav className={`fixed top-0 w-full z-50 px-8 py-6 md:px-12 md:py-8 flex justify-between items-center backdrop-blur-md transition-all duration-500
-        ${isDarkMode ? 'bg-[#0B0E14]/80 border-b border-white/5' : 'bg-[#F8FAFC]/80 border-b border-black/5'}`}>
+        ${isDarkMode ? 'bg-[#0B0E14]/80 border-b border-white/5' : 'bg-[#F8FAFC]/80 border-b border-black/5'}
+        ${scrollY > 50 ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
         <div className="flex flex-col gap-1">
           <span className={`text-[10px] font-bold tracking-[0.5em] transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>NISHANT MODI // PORTFOLIO '26</span>
           <span className="hidden md:inline-block text-[10px] text-zinc-500 font-mono tracking-widest">ARCHITECTURE & INTELLIGENCE</span>
@@ -265,19 +337,56 @@ const App = () => {
         <div className="space-y-0">
           {profile.projects.map((proj, i) => (
             <div key={i}
-              className={`group py-12 md:py-20 border-b flex flex-col md:flex-row md:items-center justify-between transition-all duration-500 cursor-pointer overflow-hidden
-              ${isDarkMode ? 'border-zinc-800/30 hover:bg-white/[0.02] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)]' : 'border-zinc-200 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5'}`}>
-              <div className="flex items-center gap-12">
-                <span
-                  className="text-xs font-mono opacity-20 group-hover:opacity-100 transition-all">{proj.id}</span>
-                <h3
-                  className="text-5xl md:text-9xl font-black tracking-tighter group-hover:italic transition-all group-hover:text-blue-500">
-                  {proj.name}</h3>
+              onClick={() => setExpandedProject(expandedProject === proj.id ? null : proj.id)}
+              className={`group border-b transition-all duration-500 cursor-pointer overflow-hidden relative
+              ${isDarkMode ? 'border-zinc-800/30' : 'border-zinc-200 hover:shadow-xl hover:shadow-blue-500/5'}
+              ${expandedProject === proj.id ? 'py-12 bg-transparent' : 'py-12 md:py-20 hover:bg-transparent'}`}>
+
+              {/* Active State Indicator Line */}
+              <div className={`absolute left-0 top-0 bottom-0 w-1 bg-blue-500 transition-all duration-500 
+                ${expandedProject === proj.id ? 'opacity-100' : 'opacity-0'}`} />
+
+              <div className="flex flex-col md:flex-row md:items-center justify-between">
+                {/* Reduced gap to bring number closer to name */}
+                <div className="flex items-center gap-4 md:gap-6 pl-4 md:pl-8">
+                  <span className={`text-xs font-mono transition-all ${expandedProject === proj.id ? 'text-blue-500 opacity-100' : 'opacity-20 group-hover:opacity-100'}`}>
+                    {proj.id}
+                  </span>
+                  <h3 className={`text-4xl md:text-8xl font-black tracking-tighter transition-all 
+                      ${expandedProject === proj.id ? 'text-blue-500' : 'group-hover:text-blue-500'}`}>
+                    {proj.name}
+                  </h3>
+                </div>
+
+                <div className="mt-8 md:mt-0 text-right pr-4 md:pr-8">
+                  <p className={`text-sm font-bold mb-2 uppercase tracking-[0.3em] ${isDarkMode ? 'text-zinc-300' : 'text-zinc-600'}`}>{proj.impact}</p>
+                  <p className="text-zinc-500 max-w-sm ml-auto font-medium leading-relaxed">{proj.desc}</p>
+                </div>
               </div>
-              <div className="mt-8 md:mt-0 text-right">
-                <p className={`text-sm font-bold mb-2 uppercase tracking-[0.3em] ${isDarkMode ? 'text-zinc-300' : 'text-zinc-600'}`}>{proj.impact}</p>
-                <p className="text-zinc-500 max-w-sm ml-auto font-medium leading-relaxed">{proj.desc}</p>
+
+              {/* EXPANDABLE SECTION */}
+              {/* Added padding-left (pl-4 md:pl-16) to move Organization right */}
+              <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-dashed border-blue-500/30 mt-12 pt-12 transition-all duration-500 ease-in-out pl-4 md:pl-16
+                ${expandedProject === proj.id ? 'opacity-100 max-h-[500px]' : 'opacity-0 max-h-0 hidden'}`}>
+
+                <div>
+                  <h4 className="text-[10px] uppercase tracking-[0.4em] text-blue-500 font-bold mb-4">Organization</h4>
+                  <p className={`text-2xl font-bold ${isDarkMode ? 'text-zinc-200' : 'text-zinc-800'}`}>{proj.company}</p>
+                </div>
+
+                <div>
+                  <h4 className="text-[10px] uppercase tracking-[0.4em] text-blue-500 font-bold mb-4">Tech Matrix</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {proj.tech && proj.tech.map((t, idx) => (
+                      <span key={idx} className={`text-xs font-mono px-3 py-1 rounded border transition-all duration-300 hover:scale-105 hover:bg-blue-600 hover:text-white hover:border-blue-500 cursor-default
+                             ${isDarkMode ? 'border-white/10 bg-white/5 text-zinc-400' : 'border-black/5 bg-zinc-100 text-zinc-600'}`}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
+
             </div>
           ))}
         </div>
@@ -321,6 +430,27 @@ const App = () => {
                     </ul>
                   </div>
                 ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* --- EDUCATION --- */}
+      <section className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
+        <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
+          <Award size={16} /> Academic Foundations
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {profile.education.map((edu, i) => (
+            <div key={i} className={`p-12 border rounded-[30px] transition-all hover:scale-[1.02]
+               ${isDarkMode ? 'border-zinc-800 bg-zinc-900/20' : 'border-zinc-200 bg-white shadow-xl shadow-blue-500/5'}`}>
+              <span className="text-blue-500 font-mono text-xs font-bold mb-4 block">{edu.period}</span>
+              <h3 className="text-3xl font-black tracking-tighter mb-2">{edu.school}</h3>
+              <p className="text-xl font-medium mb-6 opacity-80">{edu.degree}</p>
+              <div className="flex items-start gap-4">
+                <Award size={20} className="text-blue-500 shrink-0 mt-1" />
+                <p className="text-sm leading-relaxed opacity-60 font-mono">{edu.details}</p>
               </div>
             </div>
           ))}
