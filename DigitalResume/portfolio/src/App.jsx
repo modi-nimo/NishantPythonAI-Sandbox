@@ -162,7 +162,7 @@ const App = () => {
         company: "Deloitte (via Globant)",
         desc: "A revolutionary NL2SQL interface that grants analysts the power to converse with massive datasets through natural language.",
         impact: "Adopted as the primary intelligence layer for Deloitte Analysts.",
-        tech: ["OpenAI", "LangChain", "Vector DB", "React"]
+        tech: ["Gemini", "GCP", "Vertex AI", "LangChain", "PgVector", "React", "Python", "RAG"]
       },
       {
         id: "02",
@@ -170,7 +170,7 @@ const App = () => {
         company: "Enterprise Client",
         desc: "A conversational bot with emotional intelligence, bridging the gap between human empathy and automated decision-making.",
         impact: "A next-gen replacement for enterprise call-center logic.",
-        tech: ["AWS Transcribe", "Python", "Twilio", "Redis"]
+        tech: ["AWS Nova Sonic 2", "OpenAI", "Gemini", "Python", "Twilio", "Redis"]
       },
       {
         id: "03",
