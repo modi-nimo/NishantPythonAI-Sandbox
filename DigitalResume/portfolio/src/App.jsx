@@ -23,6 +23,8 @@ import {
   Database,
   Network
 } from 'lucide-react';
+import { SpeedInsights } from "@vercel/speed-insights/react"
+import { Analytics } from "@vercel/analytics/react"
 import RaceTrack from './components/RaceTrack';
 
 const App = () => {
@@ -579,6 +581,8 @@ const App = () => {
           </p>
         </div>
       </footer>
+      <SpeedInsights />
+      <Analytics />
     </div>
   );
 };
