@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nishant Modi - Resume</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.5;
+            background: #f8fafc;
+            padding: 40px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .container {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border: 1px solid var(--border);
+        }
+
+        header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .contact-info {
+            text-align: right;
+            font-size: 13px;
+        }
+
+        .role-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 5px;
+            color: var(--text-light);
+        }
+
+        section {
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .summary {
+            font-style: italic;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            font-size: 14.5px;
+        }
+
+        .experience-item,
+        .project-item {
+            margin-bottom: 20px;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .company {
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .date {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .title {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        ul {
+            padding-left: 20px;
+            list-style-type: square;
+        }
+
+        li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #f1f5f9;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .skill-cat strong {
+            font-size: 13px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        footer {
+            margin-top: 40px;
+            font-size: 11px;
+            color: var(--text-light);
+            text-align: center;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+        }
+
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        a:hover {
+            border-bottom-color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+    <button class="print-btn no-print" onclick="window.print()">Print to PDF</button>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Nishant Modi</h1>
+                <div class="role-title">Principal Architect | Tech Lead • GenAI & Distributed Ecosystems</div>
+            </div>
+            <div class="contact-info">
+                <div>Pune, India</div>
+                <div><a href="mailto:modinishant90@gmail.com">modinishant90@gmail.com</a></div>
+                <div><a href="https://www.linkedin.com/in/nishant-modi-65053073/">linkedin.com/in/nishant-modi</a></div>
+                <div><a href="https://nishant-modi.vercel.app/"
+                        style="color: var(--primary); font-weight: 600;">nishant-modi.vercel.app</a></div>
+            </div>
+        </header>
+
+        <section>
+            <p class="summary">
+                A visionary orchestrator of digital complexity with over a decade of experience bridging the gap between
+                bleeding-edge GenAI research and enterprise-grade reality. Specializing in autonomous agentic
+                intelligence, high-concurrency Python architectures, and cloud-native ecosystems for Fortune 500
+                clients.
+            </p>
+        </section>
+
+        <section>
+            <h2>Core Expertise</h2>
+            <div class="skills-grid">
+                <div class="skill-cat">
+                    <strong>GenAI & Agentic AI</strong>
+                    <div class="stack">
+                        <span class="tag">LangChain</span> <span class="tag">RAG</span> <span class="tag">LLM
+                            Tool-Calling</span> <span class="tag">Vertex AI</span> <span class="tag">Gemini</span> <span
+                            class="tag">OpenAI</span>
+                    </div>
+                </div>
+                <div class="skill-cat">
+                    <strong>Backend & Distributed Systems</strong>
+                    <div class="stack">
+                        <span class="tag">Python</span> <span class="tag">FastAPI</span> <span class="tag">Django</span>
+                        <span class="tag">Flask</span> <span class="tag">Concurrency</span> <span
+                            class="tag">Microservices</span>
+                    </div>
+                </div>
+                <div class="skill-cat">
+                    <strong>Infrastructure & Cloud</strong>
+                    <div class="stack">
+                        <span class="tag">GCP</span> <span class="tag">AWS</span> <span class="tag">Kubernetes</span>
+                        <span class="tag">Docker</span> <span class="tag">Terraform</span> <span
+                            class="tag">CI/CD</span>
+                    </div>
+                </div>
+                <div class="skill-cat">
+                    <strong>Architecture & Leadership</strong>
+                    <div class="stack">
+                        <span class="tag">Technical Vision</span> <span class="tag">Team Mentorship</span> <span
+                            class="tag">POC-to-Production</span> <span class="tag">Systems Thinking</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Professional Experience</h2>
+            <div class="experience-item">
+                <div class="item-header">
+                    <span class="company">Globant Solutions</span>
+                    <span class="date">2021 — Present</span>
+                </div>
+                <div class="title">Technical Lead (GenAI Focus)</div>
+                <ul>
+                    <li>Architected GenAI infrastructure powering Deloitte’s global analytical intelligence.</li>
+                    <li>Managing an elite squad of engineers to harden POCs into production-grade assets for Fortune 500
+                        clients.</li>
+                    <li>Integrated LLMs into core Python development cycles achieving a 30% increase in deployment
+                        velocity.</li>
+                </ul>
+            </div>
+
+            <div class="experience-item">
+                <div class="item-header">
+                    <span class="company">Xoriant Solutions</span>
+                    <span class="date">2014 — 2021</span>
+                </div>
+                <div class="title">Senior Software Engineer</div>
+                <ul>
+                    <li>Led automation initiatives for Hitachi Deployment Manager, deploying nodes globally using VMware
+                        APIs.</li>
+                    <li>Architected Python-Oracle middleware for Cisco Systems, optimizing complex version control
+                        workflows.</li>
+                    <li>Engineered investment automation for high-volume users at Lending Club to maximize portfolio
+                        yield.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>Key Projects & Technical Impact</h2>
+            <div class="project-item">
+                <div class="item-header">
+                    <strong>WINGMAN (NL2SQL Intelligence)</strong>
+                    <div class="stack" style="margin-top: 0;"><span class="tag">Vertex AI</span> <span
+                            class="tag">LangChain</span> <span class="tag">PgVector</span> <span class="tag">RAG</span>
+                    </div>
+                </div>
+                <p style="font-size: 14px; margin-top: 5px;">A revolutionary natural language interface granting
+                    analysts power to converse with massive datasets. Adopted as the primary intelligence layer at
+                    Deloitte.</p>
+                <ul>
+                    <li>Implemented advanced RAG patterns for accurate schema mapping and query generation.</li>
+                    <li>Reduced report generation time from hours to seconds through automated SQL synthesis.</li>
+                </ul>
+            </div>
+
+            <div class="project-item" style="margin-top: 15px;">
+                <div class="item-header">
+                    <strong>VOICE AI (Conversational Agent)</strong>
+                    <div class="stack" style="margin-top: 0;"><span class="tag">AWS Nova Sonic 2</span> <span
+                            class="tag">OpenAI</span> <span class="tag">Twilio</span> <span class="tag">Redis</span>
+                    </div>
+                </div>
+                <p style="font-size: 14px; margin-top: 5px;">A conversational bot with emotional intelligence, replacing
+                    enterprise call-center logic with automated reasoning.</p>
+                <ul>
+                    <li>Orchestrated low-latency audio streams for near-instant human-like response times.</li>
+                    <li>Enhanced customer engagement by bridging human empathy with automated decision-making.</li>
+                </ul>
+            </div>
+
+            <div class="project-item" style="margin-top: 15px;">
+                <div class="item-header">
+                    <strong>VALUED (High-Speed Valuation Engine)</strong>
+                    <div class="stack" style="margin-top: 0;"><span class="tag">FastAPI</span> <span
+                            class="tag">Pandas</span> <span class="tag">Celery</span> <span
+                            class="tag">Concurrency</span></div>
+                </div>
+                <p style="font-size: 14px; margin-top: 5px;">A valuation engine utilizing Pythonic concurrency to
+                    automate complex financial modeling globally.</p>
+                <ul>
+                    <li>Engineered high-throughput processing pipelines for millisecond-precision financial
+                        calculations.</li>
+                    <li>Streamlined global valuation services, significantly reducing manual overhead.</li>
+                </ul>
+            </div>
+
+            <div class="project-item" style="margin-top: 15px;">
+                <div class="item-header">
+                    <strong>HITACHI OPS (Infrastructure Automation)</strong>
+                    <div class="stack" style="margin-top: 0;"><span class="tag">Docker</span> <span
+                            class="tag">Python</span> <span class="tag">VMware API</span> <span class="tag">Bash</span>
+                    </div>
+                </div>
+                <p style="font-size: 14px; margin-top: 5px;">Automated configuration and deployment of mission-critical
+                    Datastore nodes globally.</p>
+                <ul>
+                    <li>Achieved zero-touch deployment for global data centers via custom OVA scripts.</li>
+                    <li>Implemented rigorous security hardening for CentOS/Linux environments.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>Certifications</h2>
+            <div class="item-header" style="margin-bottom: 5px;">
+                <span class="title" style="margin-bottom: 0;">Generative AI Leader Certification</span>
+                <span class="date">Google Cloud • 2025</span>
+            </div>
+            <div class="item-header">
+                <span class="title" style="margin-bottom: 0;">AI Agents Fundamentals</span>
+                <span class="date">Hugging Face • 2025</span>
+            </div>
+        </section>
+
+        <footer>
+            Digital Portfolio: <a href="https://nishant-modi.vercel.app/"
+                style="color: var(--primary); font-weight: 600;">nishant-modi.vercel.app</a> • Pune, India •
+            Architecting Autonomy
+        </footer>
+    </div>
+</body>
+
+</html>
