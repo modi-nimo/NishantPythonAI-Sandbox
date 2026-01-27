@@ -484,7 +484,7 @@ const App = () => {
       </section>
 
       {/* --- STACK --- */}
-      <section className="py-12 md:py-24 px-8 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section id="tech" className="py-12 md:py-24 px-8 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-24 relative z-20 max-w-7xl mx-auto w-full">
         <div>
           <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-12">The Ecosystem</h2>
           <div className="space-y-12">
@@ -526,7 +526,7 @@ const App = () => {
       </section>
 
       {/* --- CERTIFICATIONS --- */}
-      <section className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section id="certs" className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
         <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
           <Award size={16} /> Professional Certifications
         </h2>

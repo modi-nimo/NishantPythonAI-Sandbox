@@ -48,13 +48,13 @@ const RaceTrack = ({ scrollPercentage, isDarkMode }) => {
 
     // Milestones definitions (approximate percentage positions)
     const milestonesData = [
-        { id: 'start', label: 'START', pct: 0.02 },
-        { id: 'focus', label: 'FOCUS', pct: 0.15 },
-        { id: 'work', label: 'WORK', pct: 0.35 },
-        { id: 'career', label: 'CAREER', pct: 0.55 },
-        { id: 'study', label: 'STUDY', pct: 0.75 },
-        { id: 'tech', label: 'TECH', pct: 0.85 },
-        { id: 'contact', label: 'CONTACT', pct: 0.98 },
+        { id: 'start', label: 'START', pct: 0.02, target: 'top' },
+        { id: 'focus', label: 'FOCUS', pct: 0.15, target: 'about' },
+        { id: 'work', label: 'WORK', pct: 0.35, target: 'projects' },
+        { id: 'career', label: 'CAREER', pct: 0.55, target: 'experience' },
+        { id: 'tech', label: 'TECH', pct: 0.75, target: 'tech' },
+        { id: 'certs', label: 'CERTS', pct: 0.85, target: 'certs' },
+        { id: 'contact', label: 'CONTACT', pct: 0.98, target: 'contact' },
     ];
 
     const [milestones, setMilestones] = useState(milestonesData);
@@ -73,13 +73,24 @@ const RaceTrack = ({ scrollPercentage, isDarkMode }) => {
         }
     }, []);
 
+    const scrollToSection = (target) => {
+        if (target === 'top') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            const element = document.getElementById(target);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    };
+
     return (
-        <div className="fixed right-0 top-0 w-32 md:w-48 h-screen z-40 flex flex-col items-center pointer-events-none hidden md:flex">
+        <div className="fixed right-0 top-0 w-32 md:w-48 h-screen z-40 flex flex-col items-center hidden md:flex pointer-events-none">
             {/* Container for the Track SVG */}
             <svg
                 viewBox="0 0 100 1000"
                 preserveAspectRatio="none"
-                className="h-full w-full opacity-50"
+                className="h-full w-full opacity-50 pointer-events-none"
             >
                 {/* The Track Line */}
                 <path
@@ -102,8 +113,9 @@ const RaceTrack = ({ scrollPercentage, isDarkMode }) => {
                 return (
                     <div
                         key={m.id}
-                        className={`absolute flex items-center justify-end transition-all duration-500
-                        ${isActive ? 'opacity-100 scale-110' : 'opacity-30 scale-90'}`}
+                        onClick={() => scrollToSection(m.target)}
+                        className={`absolute flex items-center justify-end transition-all duration-500 cursor-pointer pointer-events-auto group
+                        ${isActive ? 'opacity-100 scale-110' : 'opacity-30 scale-90 hover:opacity-100'}`}
                         // Use calculated X (converted to %) and Y (pct * 100%)
                         style={{
                             left: leftPos,
@@ -115,11 +127,11 @@ const RaceTrack = ({ scrollPercentage, isDarkMode }) => {
                             // So translate(-100%, -50%) aligns the right edge of CONTAINER to the line.
                         }}
                     >
-                        <span className={`text-[10px] font-bold tracking-widest mr-3 whitespace-nowrap ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                        <span className={`text-[10px] font-bold tracking-widest mr-3 whitespace-nowrap group-hover:text-blue-500 transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>
                             {m.label}
                         </span>
                         <div
-                            className={`w-3 h-3 rounded-full ring-2 ring-offset-2 transition-colors -mr-1.5
+                            className={`w-3 h-3 rounded-full ring-2 ring-offset-2 transition-all group-hover:scale-125 -mr-1.5
                             ${isActive ? 'bg-blue-500 ring-blue-500' : 'bg-zinc-400 ring-transparent'}
                             ${isDarkMode ? 'ring-offset-black' : 'ring-offset-white'}`}
                         />
