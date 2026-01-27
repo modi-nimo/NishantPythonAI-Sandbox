@@ -213,7 +213,25 @@ const App = () => {
         tech: ["Python", "Testing Framework", "SAP API"]
       }
     ],
-    stack: ["Python", "FastAPI", "GCP", "AWS", "Agentic AI", "LangChain", "Agno", "Kubernetes", "RAG", "Docker", "Linux", "Django", "Jenkins"]
+    stack: [
+      {
+        category: "CORE ARSENAL",
+        highlight: true,
+        items: ["Python", "FastAPI", "GenAI Architecture", "LangChain", "GCP", "Distributed Systems"]
+      },
+      {
+        category: "CLOUD & INFRA",
+        items: ["AWS", "Kubernetes", "Docker", "Terraform", "Linux / Bash", "Jenkins"]
+      },
+      {
+        category: "DATA & AI",
+        items: ["RAG Systems", "PgVector", "Redis", "PostgreSQL", "Vertex AI", "OpenAI API"]
+      },
+      {
+        category: "FRONTEND & TOOLS",
+        items: ["React", "TailwindCSS", "Git", "Jira", "Vite"]
+      }
+    ]
   };
 
   return (
@@ -250,23 +268,33 @@ const App = () => {
       />
 
       {/* --- NAVIGATION --- */}
-      {/* --- NAVIGATION --- */}
       <nav className={`fixed top-0 w-full z-50 px-8 py-6 md:px-12 md:py-8 flex justify-between items-center backdrop-blur-md transition-all duration-500
         ${isDarkMode ? 'bg-[#0B0E14]/80 border-b border-white/5' : 'bg-[#F8FAFC]/80 border-b border-black/5'}
-        ${scrollY > 50 ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
-        <div className="flex flex-col gap-1">
+        translate-y-0 opacity-100`}>
+        <div className="flex flex-col gap-1 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <span className={`text-[10px] font-bold tracking-[0.5em] transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>NISHANT MODI // PORTFOLIO '26</span>
           <span className="hidden md:inline-block text-[10px] text-zinc-500 font-mono tracking-widest">ARCHITECTURE & INTELLIGENCE</span>
         </div>
-        <div className="flex gap-10 items-center">
-          <button onClick={() => setIsDarkMode(!isDarkMode)} className={`text-[10px] font-bold tracking-[0.4em]
-                    uppercase hover:opacity-50 transition-all ${isDarkMode ? 'text-white' : 'text-black'}`}>
-            {isDarkMode ? "Light" : "Dark"}
-          </button>
-          <a href={profile.linkedin} target="_blank" rel="noreferrer"
-            className={`transition-all ${isDarkMode ? 'text-white hover:text-blue-400' : 'text-black hover:text-blue-600'}`}>
-            <Linkedin size={18} />
-          </a>
+
+        <div className="flex items-center gap-8 md:gap-12">
+          <div className="hidden md:flex gap-8 text-[10px] font-bold tracking-[0.2em] uppercase">
+            {['About', 'Projects', 'Experience', 'Contact'].map((item) => (
+              <a key={item} href={`#${item.toLowerCase()}`} className={`transition-colors hover:text-blue-500 ${isDarkMode ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                {item}
+              </a>
+            ))}
+          </div>
+
+          <div className="flex gap-6 items-center">
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`text-[10px] font-bold tracking-[0.4em]
+                      uppercase hover:opacity-50 transition-all ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              {isDarkMode ? "Light" : "Dark"}
+            </button>
+            <a href={profile.linkedin} target="_blank" rel="noreferrer"
+              className={`transition-all ${isDarkMode ? 'text-white hover:text-blue-400' : 'text-black hover:text-blue-600'}`}>
+              <Linkedin size={18} />
+            </a>
+          </div>
         </div>
       </nav>
 
@@ -292,9 +320,21 @@ const App = () => {
           </h1>
           <div className="max-w-3xl">
             <p
-              className="text-xl md:text-2xl font-medium leading-loose opacity-80 border-l-2 border-blue-600 pl-6 md:pl-8">
+              className="text-xl md:text-2xl font-medium leading-loose opacity-80 border-l-2 border-blue-600 pl-6 md:pl-8 mb-12">
               {profile.summary}
             </p>
+
+            <div className="flex flex-col md:flex-row gap-6 ml-6 md:ml-8 animate-reveal" style={{ animationDelay: '0.2s' }}>
+              <a href="/resume.pdf" download
+                className="px-8 py-4 bg-blue-600 text-white text-xs font-bold tracking-[0.2em] uppercase rounded-full hover:bg-blue-700 transition-all hover:scale-105 flex items-center gap-3 w-fit shadow-lg shadow-blue-600/20">
+                <ArrowRight size={16} /> Download Resume
+              </a>
+              <a href="#projects"
+                className={`px-8 py-4 border text-xs font-bold tracking-[0.2em] uppercase rounded-full transition-all hover:scale-105 flex items-center gap-3 w-fit
+                 ${isDarkMode ? 'border-white/20 hover:bg-white/10' : 'border-black/10 hover:bg-black/5'}`}>
+                View My Work
+              </a>
+            </div>
           </div>
         </div>
 
@@ -306,7 +346,7 @@ const App = () => {
       </header>
 
       {/* --- EXPERTISE --- */}
-      <section className="py-12 md:py-24 px-8 md:px-24 border-y border-zinc-800/50 relative z-20 max-w-7xl mx-auto w-full">
+      <section id="about" className="py-12 md:py-24 px-8 md:px-24 border-y border-zinc-800/50 relative z-20 max-w-7xl mx-auto w-full">
         <h2
           className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
           <Network size={16} /> Architectural Focus
@@ -328,7 +368,7 @@ const App = () => {
       </section>
 
       {/* --- PROJECTS --- */}
-      <section className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section id="projects" className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
         <div className="flex justify-between items-end mb-24">
           <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase">Selected Works</h2>
           <p className="text-[10px] font-mono opacity-30 uppercase tracking-[0.2em]">Scale / Intelligence / Impact
@@ -393,7 +433,7 @@ const App = () => {
       </section>
 
       {/* --- PROFESSIONAL TIMELINE --- */}
-      <section className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
+      <section id="experience" className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
         <h2
           className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
           <Terminal size={16} /> Professional Trajectory
@@ -436,6 +476,48 @@ const App = () => {
         </div>
       </section>
 
+      {/* --- STACK --- */}
+      <section className="py-12 md:py-24 px-8 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-24 relative z-20 max-w-7xl mx-auto w-full">
+        <div>
+          <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-12">The Ecosystem</h2>
+          <div className="space-y-12">
+            {profile.stack.map((group, i) => (
+              <div key={i}>
+                <h3 className={`text-[10px] font-bold tracking-[0.4em] uppercase mb-6 flex items-center gap-3
+                   ${group.highlight ? 'text-blue-500' : 'text-zinc-500'}`}>
+                  {group.highlight && <Zap size={12} />} {group.category}
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {group.items.map((tech, j) => (
+                    <span key={j}
+                      className={`px-4 py-2 rounded-lg text-sm font-bold border transition-all hover:-translate-y-1 cursor-default
+                      ${group.highlight
+                          ? (isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700')
+                          : (isDarkMode ? 'bg-zinc-900/50 border-white/5 text-zinc-400' : 'bg-white border-black/5 text-zinc-600')
+                        }`}>
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className={`p-12 rounded-[40px] border flex flex-col justify-center
+          ${isDarkMode ? 'bg-[#0B0E14] border-white/5 shadow-2xl shadow-black/50' : 'bg-white border-zinc-100 shadow-[0_20px_40px_rgba(0,0,0,0.04)]'}`}>
+          <h2
+            className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-12 flex items-center gap-2">
+            <Users size={14} className="text-blue-500" /> Human Impact
+          </h2>
+          <div className="space-y-8">
+            <p className="text-3xl font-black tracking-tighter leading-tight">
+              Mentored <span className="text-blue-500">150+ engineers</span> on GenAI adoption, bridging the
+              gap between legacy engineering and the <span className="italic">AI-Native future.</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* --- EDUCATION --- */}
       <section className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
         <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
@@ -457,37 +539,8 @@ const App = () => {
         </div>
       </section>
 
-      {/* --- STACK --- */}
-      <section className="py-12 md:py-24 px-8 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-24 relative z-20 max-w-7xl mx-auto w-full">
-        <div>
-          <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-12">The Ecosystem</h2>
-          <div className="flex flex-wrap gap-4">
-            {profile.stack.map((tech, i) => (
-              <span key={i}
-                className={`px-8 py-4 rounded-[20px] border font-bold text-xl hover:bg-blue-600 hover:border-blue-500 hover:text-white transition-all hover:-translate-y-2 cursor-default
-                ${isDarkMode ? 'bg-zinc-900/50 border-white/5 text-zinc-400' : 'bg-white border-black/5 text-zinc-600 shadow-sm'}`}>
-                {tech}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div className={`p-12 rounded-[40px] border flex flex-col justify-center
-          ${isDarkMode ? 'bg-[#0B0E14] border-white/5 shadow-2xl shadow-black/50' : 'bg-white border-zinc-100 shadow-[0_20px_40px_rgba(0,0,0,0.04)]'}`}>
-          <h2
-            className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-12 flex items-center gap-2">
-            <Users size={14} className="text-blue-500" /> Human Impact
-          </h2>
-          <div className="space-y-8">
-            <p className="text-3xl font-black tracking-tighter leading-tight">
-              Mentored <span className="text-blue-500">150+ engineers</span> on GenAI adoption, bridging the
-              gap between legacy engineering and the <span className="italic">AI-Native future.</span>
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* --- FOOTER --- */}
-      <footer className="py-32 md:py-60 px-8 md:px-24 text-center relative z-20">
+      <footer id="contact" className="py-32 md:py-60 px-8 md:px-24 text-center relative z-20">
         <div className="mb-24">
           <p className="text-[10px] font-bold tracking-[0.8em] text-blue-500 uppercase mb-8">Initiate Connection
           </p>
