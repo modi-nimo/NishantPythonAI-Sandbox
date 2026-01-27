@@ -144,14 +144,21 @@ const App = () => {
       }
     ],
 
-    // Education (Added from Resume)
-    education: [
+    certifications: [
       {
-        degree: "B.E. Information Technology",
-        school: "University of Pune",
-        period: "2010 — 2014",
-        details: "Achieved 1st Rank in Software Development Contest at COEP."
-      }
+        title: "Generative AI Leader Certification",
+        issuer: "Google",
+        period: "Issued Sep 2025 · Expires Sep 2028",
+        link: "https://www.credly.com/badges/db342e4d-2608-46d3-ab62-ba1c049c1a78/linked_in_profile",
+        details: "Strategic leadership in Generative AI adoption and transformation."
+      },
+      {
+        title: "AI Agents Fundamentals",
+        issuer: "Hugging Face",
+        period: "Issued Mar 2025",
+        link: "/hf-cert.png",
+        details: "Credential ID: nimo007. Foundational expertise in autonomous AI agents."
+      },
     ],
 
     // Rewritten Projects
@@ -272,7 +279,7 @@ const App = () => {
         ${isDarkMode ? 'bg-[#0B0E14]/80 border-b border-white/5' : 'bg-[#F8FAFC]/80 border-b border-black/5'}
         translate-y-0 opacity-100`}>
         <div className="flex flex-col gap-1 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <span className={`text-[10px] font-bold tracking-[0.5em] transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>NISHANT MODI // PORTFOLIO '26</span>
+          <span className={`text-[10px] font-bold tracking-[0.5em] transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>NISHANT MODI</span>
           <span className="hidden md:inline-block text-[10px] text-zinc-500 font-mono tracking-widest">ARCHITECTURE & INTELLIGENCE</span>
         </div>
 
@@ -518,21 +525,27 @@ const App = () => {
         </div>
       </section>
 
-      {/* --- EDUCATION --- */}
+      {/* --- CERTIFICATIONS --- */}
       <section className="py-12 md:py-24 px-8 md:px-24 relative z-20 max-w-7xl mx-auto w-full">
         <h2 className="text-[10px] font-bold tracking-[0.6em] text-zinc-500 uppercase mb-24 flex items-center gap-4">
-          <Award size={16} /> Academic Foundations
+          <Award size={16} /> Professional Certifications
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {profile.education.map((edu, i) => (
-            <div key={i} className={`p-12 border rounded-[30px] transition-all hover:scale-[1.02]
-               ${isDarkMode ? 'border-zinc-800 bg-zinc-900/20' : 'border-zinc-200 bg-white shadow-xl shadow-blue-500/5'}`}>
-              <span className="text-blue-500 font-mono text-xs font-bold mb-4 block">{edu.period}</span>
-              <h3 className="text-3xl font-black tracking-tighter mb-2">{edu.school}</h3>
-              <p className="text-xl font-medium mb-6 opacity-80">{edu.degree}</p>
+          {/* Certifications */}
+          {profile.certifications.map((cert, i) => (
+            <div key={`cert-${i}`}
+              onClick={() => cert.link && window.open(cert.link, '_blank')}
+              className={`p-12 border rounded-[30px] transition-all hover:scale-[1.02] cursor-pointer group
+               ${isDarkMode ? 'border-zinc-800 bg-zinc-900/20 hover:border-blue-500/30' : 'border-zinc-200 bg-white shadow-xl shadow-blue-500/5 hover:border-blue-500/30'}`}>
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-blue-500 font-mono text-xs font-bold block">{cert.period}</span>
+                {cert.link && <ArrowUpRight size={16} className="text-zinc-500 group-hover:text-blue-500 transition-colors" />}
+              </div>
+              <h3 className="text-3xl font-black tracking-tighter mb-2">{cert.issuer}</h3>
+              <p className="text-xl font-medium mb-6 opacity-80">{cert.title}</p>
               <div className="flex items-start gap-4">
-                <Award size={20} className="text-blue-500 shrink-0 mt-1" />
-                <p className="text-sm leading-relaxed opacity-60 font-mono">{edu.details}</p>
+                <Shield size={20} className="text-blue-500 shrink-0 mt-1" />
+                <p className="text-sm leading-relaxed opacity-60 font-mono">{cert.details}</p>
               </div>
             </div>
           ))}
