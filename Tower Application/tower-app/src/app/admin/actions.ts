@@ -2,6 +2,35 @@
 
 import { createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
+import { clearAdminSession } from "@/utils/auth-session"
+
+export async function adminLogout() {
+    await clearAdminSession()
+    redirect("/admin/login")
+}
+
+export async function createNotice(formData: FormData) {
+    const supabase = await createClient()
+    const { sendTelegramNotification } = await import('@/utils/telegram')
+
+    const title = formData.get("title") as string
+    const content = formData.get("content") as string
+    const priority = formData.get("priority") as string
+
+    if (!title || !content) throw new Error("Missing fields")
+
+    const { error } = await supabase.from("notices").insert({ title, content, priority })
+
+    if (error) throw new Error(error.message)
+
+    if (priority === 'urgent') {
+        await sendTelegramNotification(`📢 URGENT NOTICE: ${title}\n\n${content}`)
+    }
+
+    revalidatePath("/")
+    revalidatePath("/admin")
+}
 
 export async function updateComplaintStatus(complaintId: string, newStatus: string) {
     const supabase = await createClient()

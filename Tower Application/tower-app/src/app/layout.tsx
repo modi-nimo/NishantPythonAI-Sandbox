@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNav } from "@/components/layout/mobile-nav";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
+const outfit = Outfit({ subsets: ["latin"], variable: '--font-outfit' });
+
+const towerName = process.env.NEXT_PUBLIC_TOWER_NAME || "Tower Pulse";
 
 export const metadata: Metadata = {
-  title: "Tower Connect - Resident Management System",
-  description: "A production-ready MVP for Tower Communication & Complaint Management",
+  title: `Tower Pulse | ${towerName}`,
+  description: `Official residence management & communication portal for ${towerName}`,
 };
 
 export default function RootLayout({
@@ -16,11 +20,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} min-h-screen bg-gray-50 flex flex-col`}>
-        <Header />
-        <main className="flex-1">
-          {children}
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+      <body className="font-sans min-h-screen">
+        {/* Background Decorative Blur */}
+        <div className="premium-blur" aria-hidden="true" />
+
+        <Sidebar />
+        <MobileNav />
+
+        <main className="lg:pl-64 min-h-screen flex flex-col pt-4 pb-20 lg:pt-0">
+          <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {children}
+          </div>
         </main>
       </body>
     </html>
