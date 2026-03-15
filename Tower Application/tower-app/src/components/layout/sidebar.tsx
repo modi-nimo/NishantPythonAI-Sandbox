@@ -20,7 +20,6 @@ const navItems = [
     { name: "Issues Center", href: "/complaints", icon: MessageCircle },
     { name: "Events", href: "/events", icon: Calendar },
     { name: "Notices", href: "/notices", icon: Bell },
-    { name: "Documents", href: "/documents", icon: FileText },
     { name: "Admin Portal", href: "/admin", icon: ShieldCheck },
 ]
 
@@ -37,7 +36,6 @@ export function Sidebar() {
                     <span className="font-bold text-lg leading-tight tracking-tight">
                         {process.env.NEXT_PUBLIC_TOWER_NAME || "Tower Pulse"}
                     </span>
-                    <span className="text-[10px] uppercase tracking-widest text-primary-500 font-bold">Premium Edition</span>
                 </div>
             </div>
 
@@ -84,7 +82,7 @@ export function Sidebar() {
                 <div className="glass-card p-4 rounded-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 h-16 w-16 bg-accent-500/10 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-700" />
                     <p className="text-xs font-bold text-primary-600 mb-1">Status: Operational</p>
-                    <p className="text-[10px] text-gray-400">Tower Pulse Ecosystem</p>
+                    <p className="text-[10px] text-gray-400 font-bold tracking-tight uppercase">Tower Hub</p>
                 </div>
 
                 <div className="px-2 pt-2">

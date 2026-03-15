@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
     Activity,
@@ -10,6 +10,8 @@ import {
 } from "lucide-react"
 import { cn } from "@/utils/cn"
 
+import { Drawer } from "@/components/ui/drawer"
+
 interface IssueTabsProps {
     feed: React.ReactNode
     form: React.ReactNode
@@ -17,70 +19,54 @@ interface IssueTabsProps {
 }
 
 export function IssueTabs({ feed, form, count }: IssueTabsProps) {
-    const [activeTab, setActiveTab] = useState<"feed" | "report">("feed")
-
-    const tabs = [
-        { id: "feed", label: "Live Feed", icon: Activity, badge: count },
-        { id: "report", label: "New Report", icon: PlusCircle },
-    ]
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex bg-gray-100 dark:bg-white/5 p-1.5 rounded-[2rem] border border-gray-200 dark:border-white/5">
-                    {tabs.map((tab) => {
-                        const Icon = tab.icon
-                        const isActive = activeTab === tab.id
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={cn(
-                                    "relative flex items-center gap-2 px-6 py-3 rounded-[1.5rem] text-sm font-bold transition-all duration-500",
-                                    isActive ? "text-white" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
-                                )}
-                            >
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="activeIssueTab"
-                                        className="absolute inset-0 bg-slate-900 rounded-[1.5rem] shadow-xl"
-                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                    />
-                                )}
-                                <div className="relative z-10 flex items-center gap-2">
-                                    <Icon className="h-4 w-4" />
-                                    <span className="uppercase tracking-widest text-[10px]">{tab.label}</span>
-                                    {tab.badge !== undefined && tab.badge > 0 && (
-                                        <span className={cn(
-                                            "h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-black",
-                                            isActive ? "bg-primary-500 text-white" : "bg-gray-200 dark:bg-white/10 text-gray-400"
-                                        )}>
-                                            {tab.badge}
-                                        </span>
-                                    )}
-                                </div>
-                            </button>
-                        )
-                    })}
+                <div className="flex items-center gap-4 bg-gray-100 dark:bg-white/5 p-1.5 rounded-[2rem] border border-gray-200 dark:border-white/5">
+                    <div className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-slate-900 text-white shadow-xl">
+                        <Activity className="h-4 w-4 text-primary-400" />
+                        <span className="uppercase tracking-widest text-[10px] font-black">Live Feedback Feed</span>
+                        {count > 0 && (
+                            <span className="h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-black bg-primary-500 text-white ml-2">
+                                {count}
+                            </span>
+                        )}
+                    </div>
+
+                    <button
+                        onClick={() => setIsDrawerOpen(true)}
+                        className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white/10 transition-all font-bold group"
+                    >
+                        <PlusCircle className="h-4 w-4 transition-transform group-hover:rotate-90 group-hover:scale-110" />
+                        <span className="uppercase tracking-widest text-[10px]">New Report</span>
+                    </button>
                 </div>
 
                 <div className="flex items-center gap-2 px-4 py-2 glass-card rounded-2xl">
                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Real-time Sync</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Sync Active</span>
                 </div>
             </div>
 
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                >
-                    {activeTab === "feed" ? feed : form}
-                </motion.div>
-            </AnimatePresence>
+            <div className="min-h-[400px]">
+                {feed}
+            </div>
+
+            <Drawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                title="Service Request"
+                subtitle="Neural Transmission Secured"
+            >
+                <div className="py-2">
+                    {React.cloneElement(form as React.ReactElement, {
+                        onSuccess: () => setIsDrawerOpen(false),
+                        embedded: true
+                    } as any)}
+                </div>
+            </Drawer>
         </div>
     )
 }

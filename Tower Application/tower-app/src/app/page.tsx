@@ -13,6 +13,7 @@ import Link from "next/link"
 import * as motion from "framer-motion/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { transformGDriveUrl } from "@/utils/media"
 
 export default async function Home() {
   const supabase = await createClient()
@@ -57,7 +58,7 @@ export default async function Home() {
           </h1>
 
           <p className="text-lg text-slate-300 mb-10 leading-relaxed font-light">
-            Experience seamless living with instant society updates, simplified complaint tracking, and a verified document vault.
+            Experience seamless living with instant society updates and simplified complaint tracking.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -107,7 +108,14 @@ export default async function Home() {
                         <Clock className="h-3 w-3" /> {new Date(notice.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-gray-500 leading-relaxed font-medium">{notice.content}</p>
+                    <div className="flex gap-4">
+                      <p className="text-gray-500 leading-relaxed font-medium flex-1">{notice.content}</p>
+                      {notice.image_url && (
+                        <div className="h-20 w-32 rounded-xl overflow-hidden shrink-0 border border-gray-100 dark:border-white/5 shadow-sm group-hover:scale-105 transition-transform duration-500">
+                          <img src={transformGDriveUrl(notice.image_url) || ""} alt="" referrerPolicy="no-referrer" className="object-cover w-full h-full" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -152,31 +160,6 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* Quick Docs */}
-          <section className="space-y-6">
-            <h2 className="text-xl font-bold font-outfit flex items-center gap-3">
-              <FileText className="h-5 w-5 text-sky-500" /> Quick Vault
-            </h2>
-            <div className="glass p-2 rounded-3xl space-y-1">
-              {documents.map((doc, idx) => (
-                <Link
-                  key={doc.id}
-                  href={doc.file_url}
-                  target="_blank"
-                  className="flex items-center gap-3 p-3 hover:bg-primary-500/5 rounded-2xl transition-all group"
-                >
-                  <div className="h-10 w-10 bg-sky-500/10 text-sky-500 rounded-xl flex items-center justify-center group-hover:bg-sky-500 group-hover:text-white transition-colors">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <span className="text-[13px] font-bold text-gray-600 dark:text-gray-300 group-hover:text-primary-600 transition-colors line-clamp-1">{doc.title}</span>
-                  <ArrowRight className="h-3 w-3 ml-auto text-gray-300 group-hover:text-primary-500 -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all" />
-                </Link>
-              ))}
-              <Button variant="ghost" className="w-full text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-primary-600">
-                Access Full Vault
-              </Button>
-            </div>
-          </section>
         </div>
       </div>
     </div>

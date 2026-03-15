@@ -131,7 +131,7 @@ function CommentForm({ complaintId }: { complaintId: string }) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Post an update..."
-                className="flex-1 bg-gray-50/50 dark:bg-white/5 border border-transparent focus:border-primary-500 px-4 py-2 rounded-xl text-sm outline-none transition-all"
+                className="flex-1 bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 focus:ring-1 focus:ring-primary-500 px-4 py-2 rounded-xl text-sm outline-none transition-all text-slate-900 dark:text-white placeholder:text-gray-400"
             />
             <Button
                 type="submit"

@@ -50,7 +50,7 @@ export default async function AdminDashboard() {
                         Committee <span className="text-primary-600">Suite.</span>
                     </h1>
                     <p className="text-gray-400 font-medium tracking-tight">
-                        Operations Center for {process.env.NEXT_PUBLIC_TOWER_NAME || "Tower Pulse"} Ecosystem
+                        Operations Center for {process.env.NEXT_PUBLIC_TOWER_NAME || "Tower Pulse"}
                     </p>
                 </div>
 

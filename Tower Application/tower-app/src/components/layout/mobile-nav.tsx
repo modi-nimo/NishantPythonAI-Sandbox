@@ -21,7 +21,6 @@ const navItems = [
     { name: "Issues Center", href: "/complaints", icon: MessageCircle },
     { name: "Events", href: "/events", icon: Calendar },
     { name: "Notices", href: "/notices", icon: Bell },
-    { name: "Docs", href: "/documents", icon: FileText },
     { name: "Admin", href: "/admin", icon: ShieldCheck },
 ]
 

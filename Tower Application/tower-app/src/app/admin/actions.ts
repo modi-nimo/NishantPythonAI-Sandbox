@@ -17,10 +17,16 @@ export async function createNotice(formData: FormData) {
     const title = formData.get("title") as string
     const content = formData.get("content") as string
     const priority = formData.get("priority") as string
+    const image_url = formData.get("image_url") as string
 
     if (!title || !content) throw new Error("Missing fields")
 
-    const { error } = await supabase.from("notices").insert({ title, content, priority })
+    const { error } = await supabase.from("notices").insert({
+        title,
+        content,
+        priority,
+        image_url: image_url || null
+    })
 
     if (error) throw new Error(error.message)
 

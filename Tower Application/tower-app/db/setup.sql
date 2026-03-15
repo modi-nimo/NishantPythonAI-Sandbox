@@ -24,8 +24,10 @@ CREATE TABLE IF NOT EXISTS notices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     content TEXT NOT NULL,
+    image_url TEXT,
     date TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    is_urgent BOOLEAN DEFAULT false
+    is_urgent BOOLEAN DEFAULT false,
+    priority TEXT DEFAULT 'normal'
 );
 
 -- Events Table
