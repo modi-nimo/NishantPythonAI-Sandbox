@@ -8,7 +8,7 @@ import {
     BarChart3,
     ShieldAlert,
 } from "lucide-react"
-import { cn } from "@/utils/cn"
+import { cn } from "../../utils/cn"
 
 interface Tab {
     id: string

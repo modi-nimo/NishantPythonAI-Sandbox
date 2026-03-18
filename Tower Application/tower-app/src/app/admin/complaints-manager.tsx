@@ -13,7 +13,7 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/utils/cn"
+import { cn } from "../../utils/cn"
 import { updateComplaintStatus, addComplaintComment } from "./actions"
 import { DeleteComplaintButton } from "./delete-complaint-button"
 

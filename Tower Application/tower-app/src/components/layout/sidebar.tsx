@@ -13,7 +13,7 @@ import {
     Home,
     ChevronRight
 } from "lucide-react"
-import { cn } from "@/utils/cn"
+import { cn } from "../utils/cn"
 
 const navItems = [
     { name: "Home", href: "/", icon: Home },

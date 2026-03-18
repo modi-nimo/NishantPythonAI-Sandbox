@@ -1,5 +1,5 @@
-import { createClient } from "@/utils/supabase/server"
-import { Badge } from "@/components/ui/badge"
+import { createClient } from "../../utils/supabase/server"
+import { Badge } from "../../components/ui/badge"
 import {
     Inbox,
     MessageSquare,
@@ -14,9 +14,9 @@ import {
     Key,
     HelpCircle
 } from "lucide-react"
-import { cn } from "@/utils/cn"
+import { cn } from "../../utils/cn"
 import { IssueTabs } from "./issue-tabs"
-import { ComplaintForm } from "@/components/issues/complaint-form"
+import { ComplaintForm } from "../../components/issues/complaint-form"
 
 const categoryIcons: Record<string, any> = {
     "Water": Droplets,

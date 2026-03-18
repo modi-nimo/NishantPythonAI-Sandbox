@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import { Clock, ShieldCheck } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Modal } from "@/components/ui/modal"
-import { cn } from "@/utils/cn"
-import { transformGDriveUrl } from "@/utils/media"
+import { Badge } from "../../../../components/ui/badge"
+import { Modal } from "../../../../components/ui/modal"
+import { cn } from "../../utils/cn"
+import { transformGDriveUrl } from "../../utils/media"
 
 interface Notice {
     id: string

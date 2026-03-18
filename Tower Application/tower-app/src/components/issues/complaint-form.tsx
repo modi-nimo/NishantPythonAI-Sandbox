@@ -14,12 +14,12 @@ import {
     Key,
     HelpCircle
 } from "lucide-react"
-import { submitComplaint } from "@/lib/actions/complaints"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { submitComplaint } from "../../lib/actions/complaints"
+import { Button } from "../ui/button"
+import { Input } from "../ui/input"
+import { Textarea } from "../ui/textarea"
 import { Label } from "@/components/ui/label"
-import { cn } from "@/utils/cn"
+import { cn } from "../../utils/cn"
 
 const categories = [
     { id: "Water", icon: Droplets, color: "text-sky-400", bg: "bg-sky-400/10", border: "border-sky-400/20" },

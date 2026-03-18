@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server"
+import { createClient } from "../utils/supabase/server"
 import {
   Bell,
   Calendar,
@@ -11,11 +11,11 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import * as motion from "framer-motion/client"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { transformGDriveUrl } from "@/utils/media"
+import { Badge } from "../components/ui/badge"
+import { Button } from "../components/ui/button"
+import { transformGDriveUrl } from "../utils/media"
 
-import { getTowerMetadata } from "@/lib/actions/metadata"
+import { getTowerMetadata } from "../lib/actions/metadata"
 
 export default async function Home() {
   const supabase = await createClient()
