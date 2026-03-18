@@ -14,7 +14,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "../utils/cn"
+import { cn } from "@/utils/cn"
 
 const navItems = [
     { name: "Home", href: "/", icon: Home },
