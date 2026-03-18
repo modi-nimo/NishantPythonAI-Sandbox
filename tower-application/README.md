@@ -38,16 +38,16 @@ TELEGRAM_CHAT_ID="your-chat-id"
 To ensure security, the admin dashboard uses BCrypt password hashing. **Do not store plain-text passwords in the `admins` table.**
 
 #### How to Add/Update an Admin:
-1. Generate a secure hash for the password using Node.js (Run this from the project root):
+1. Generate a secure hash for the password using Node.js (Run this from the repository root):
    ```bash
-   cd tower-app && node -e "console.log(require('bcryptjs').hashSync('your_password_here', 10))"
+   cd tower-application/tower-app && node -e "console.log(require('bcryptjs').hashSync('your_password_here', 10))"
    ```
 2. Open your Supabase **Table Editor** for the `admins` table.
 3. Insert or update a row with the email and the generated hash (e.g., `$2a$10$...`) in the `password` column.
 
 ### 5. Local Execution
 ```bash
-cd tower-app
+cd tower-application/tower-app
 npm install
 npm run dev
 ```
@@ -55,14 +55,14 @@ npm run dev
 ### 6. Deployment on Vercel
 1. Push this repository to GitHub.
 2. Visit [Vercel](https://vercel.com/) and Import the project.
-3. Select `tower-app` as your Root Directory.
+3. Select `tower-application/tower-app` as your Root Directory.
 4. Add the Environment Variables collected in Steps 1, 2 & 3.
 5. Hit **Deploy**.
 
 ---
 
 ## Modifying Logic
-- **Complaint Submission**: Logic for form submission and Telegram alerts is in `/src/app/complaint/actions.ts`.
+- **Complaint Submission**: Logic for form submission is in `/src/app/actions/complaints.ts`.
 - **Public Dashboard**: The complaints view is in `/src/app/complaints/page.tsx`.
 - **Admin Dashboard**: Manage complaints, notices, and updates in `/src/app/admin/page.tsx` and its actions.
 - **Security Logic**: Login and hashing logic can be found in `/src/app/admin/login/actions.ts`.
