@@ -8,6 +8,22 @@ export async function sendTelegramNotification(message: string, threadId?: numbe
     }
 
     const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    const payload: {
+        chat_id: string
+        text: string
+        parse_mode: "HTML"
+        disable_web_page_preview: boolean
+        message_thread_id?: number
+    } = {
+        chat_id: chatId,
+        text: message,
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+    };
+
+    if (typeof threadId === "number" && Number.isFinite(threadId)) {
+        payload.message_thread_id = threadId;
+    }
 
     try {
         const response = await fetch(url, {
@@ -15,12 +31,7 @@ export async function sendTelegramNotification(message: string, threadId?: numbe
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message,
-                message_thread_id: threadId,
-                parse_mode: 'HTML'
-            }),
+            body: JSON.stringify(payload),
         });
 
         if (!response.ok) {

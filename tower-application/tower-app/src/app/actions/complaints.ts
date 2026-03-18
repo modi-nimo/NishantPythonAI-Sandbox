@@ -4,6 +4,13 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/utils/supabase/server"
 import { sendTelegramNotification } from "@/utils/telegram"
 
+function escapeHtml(value: string) {
+    return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+}
+
 export async function submitComplaint(formData: FormData) {
     const supabase = await createClient()
 
@@ -25,17 +32,24 @@ export async function submitComplaint(formData: FormData) {
         throw new Error(error.message)
     }
 
+    const issuesThreadId = Number(process.env.TELEGRAM_ISSUES_THREAD_ID)
     const complaintSummary = [
-        "New complaint submitted",
-        `Tower: ${process.env.NEXT_PUBLIC_TOWER_NAME || "Tower Pulse"}`,
-        `Flat: ${payload.flat_no}`,
-        `Resident: ${payload.resident_name || "Not provided"}`,
-        `Phone: ${payload.phone_number || "Not provided"}`,
-        `Category: ${payload.category}`,
-        `Description: ${payload.description}`,
+        "🚨 <b>New Issue Reported</b>",
+        "",
+        `🏢 <b>Tower:</b> ${escapeHtml(process.env.NEXT_PUBLIC_TOWER_NAME || "Tower Pulse")}`,
+        `🏠 <b>Flat:</b> ${escapeHtml(payload.flat_no)}`,
+        `👤 <b>Resident:</b> ${escapeHtml(payload.resident_name || "Not provided")}`,
+        `📞 <b>Phone:</b> ${escapeHtml(payload.phone_number || "Not provided")}`,
+        `🛠️ <b>Category:</b> ${escapeHtml(payload.category)}`,
+        "",
+        "📝 <b>Description</b>",
+        escapeHtml(payload.description),
     ].join("\n")
 
-    await sendTelegramNotification(complaintSummary)
+    await sendTelegramNotification(
+        complaintSummary,
+        Number.isFinite(issuesThreadId) ? issuesThreadId : undefined
+    )
 
     revalidatePath("/complaints")
     revalidatePath("/admin")
