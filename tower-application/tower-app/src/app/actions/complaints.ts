@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/utils/supabase/server"
+import { sendTelegramNotification } from "@/utils/telegram"
 
 export async function submitComplaint(formData: FormData) {
     const supabase = await createClient()
@@ -23,6 +24,18 @@ export async function submitComplaint(formData: FormData) {
     if (error) {
         throw new Error(error.message)
     }
+
+    const complaintSummary = [
+        "New complaint submitted",
+        `Tower: ${process.env.NEXT_PUBLIC_TOWER_NAME || "Tower Pulse"}`,
+        `Flat: ${payload.flat_no}`,
+        `Resident: ${payload.resident_name || "Not provided"}`,
+        `Phone: ${payload.phone_number || "Not provided"}`,
+        `Category: ${payload.category}`,
+        `Description: ${payload.description}`,
+    ].join("\n")
+
+    await sendTelegramNotification(complaintSummary)
 
     revalidatePath("/complaints")
     revalidatePath("/admin")
