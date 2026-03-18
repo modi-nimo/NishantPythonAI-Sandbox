@@ -7,8 +7,10 @@ import {
     Plus,
     CheckCircle2,
     TrendingUp,
-    ShieldCheck
+    ShieldCheck,
+    Phone
 } from "lucide-react"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/utils/cn"
@@ -44,7 +46,13 @@ export function ComplaintsManager({ complaints }: { complaints: any[] }) {
                                     )}>
                                         {c.status}
                                     </Badge>
-                                    <span className="text-xl font-black font-outfit uppercase">Flat {c.flat_no}</span>
+                                    <span className="text-xl font-black font-outfit uppercase tracking-tighter">Flat {c.flat_no}</span>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">{c.resident_name || 'Anonymous Resident'}</p>
+                                    <a href={`tel:${c.phone_number}`} className="text-xs font-bold text-primary-600 hover:underline flex items-center gap-1">
+                                        {c.phone_number || 'No Phone provided'}
+                                    </a>
                                 </div>
                                 <p className="text-lg font-bold text-gray-700 dark:text-gray-300 leading-relaxed max-w-2xl">{c.description}</p>
                                 <p className="text-[10px] font-black text-primary-600 uppercase tracking-widest flex items-center gap-2">
@@ -71,35 +79,55 @@ export function ComplaintsManager({ complaints }: { complaints: any[] }) {
                                         Resolve
                                     </Button>
                                 )}
-                                {c.status === 'resolved' && (
-                                    <Button
-                                        onClick={() => updateComplaintStatus(c.id, 'open')}
-                                        size="sm"
-                                        variant="outline"
-                                        className="rounded-xl h-10 font-bold"
-                                    >
-                                        Re-open
-                                    </Button>
+                                {c.phone_number && (
+                                    <a href={`tel:${c.phone_number}`}>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="rounded-xl h-10 font-bold"
+                                        >
+                                            <Phone className="h-4 w-4 mr-2" /> Call
+                                        </Button>
+                                    </a>
                                 )}
                                 <DeleteComplaintButton id={c.id} />
                             </div>
                         </div>
 
-                        {/* Discussion Thread */}
-                        <div className="mt-8 pt-8 border-t border-gray-100 dark:border-white/5 space-y-4">
-                            <div className="flex items-center justify-between">
+                        {/* Discussion & Audit Trail */}
+                        <div className="mt-8 pt-8 border-t border-gray-100 dark:border-white/5 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Discussion Channel */}
+                            <div className="space-y-4">
                                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                                    <MessageSquare className="h-3 w-3" /> Internal Timeline
+                                    <MessageSquare className="h-3 w-3" /> Committee Discussion
                                 </h4>
+                                <div className="space-y-3 pl-4 border-l-2 border-gray-100 dark:border-white/5">
+                                    {c.comments?.map((comment: any) => (
+                                        <div key={comment.id} className="group relative">
+                                            <p className="text-sm font-medium text-gray-500 leading-snug">{comment.message}</p>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase">{new Date(comment.created_at).toLocaleDateString()}</span>
+                                        </div>
+                                    ))}
+                                    <CommentForm complaintId={c.id} />
+                                </div>
                             </div>
-                            <div className="space-y-3 pl-4 border-l-2 border-gray-50 dark:border-white/5">
-                                {c.comments?.map((comment: any) => (
-                                    <div key={comment.id} className="group relative">
-                                        <p className="text-sm font-medium text-gray-500 leading-snug">{comment.message}</p>
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase">{new Date(comment.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                ))}
-                                <CommentForm complaintId={c.id} />
+
+                            {/* Audit Trail (Automated Logs) */}
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <ShieldCheck className="h-3 w-3" /> Audit Trail
+                                </h4>
+                                <div className="space-y-3 pl-4 border-l-2 border-gray-100 dark:border-white/5">
+                                    {c.complaint_logs?.map((log: any) => (
+                                        <div key={log.id} className="text-[11px] font-medium text-gray-400">
+                                            Status changed from <span className="font-bold text-gray-600">{log.old_status}</span> to <span className="font-bold text-primary-600 uppercase">{log.new_status}</span>
+                                            <p className="text-[9px] opacity-60 uppercase mt-0.5">{new Date(log.created_at).toLocaleString()}</p>
+                                        </div>
+                                    ))}
+                                    {(!c.complaint_logs || c.complaint_logs.length === 0) && (
+                                        <p className="text-[10px] text-gray-300 italic">No historical changes recorded</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

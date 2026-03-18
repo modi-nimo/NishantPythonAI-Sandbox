@@ -133,7 +133,7 @@ export function ComplaintForm({
                 )}
 
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Flat No Input */}
                         <div className="space-y-3">
                             <Label htmlFor="flat_no" className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-600/80 ml-2">Assigned Unit</Label>
@@ -147,7 +147,37 @@ export function ComplaintForm({
                                 />
                             </div>
                         </div>
+
+                        {/* Resident Name */}
+                        <div className="space-y-3">
+                            <Label htmlFor="resident_name" className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-600/80 ml-2">Resident Name</Label>
+                            <div className="relative group">
+                                <Input
+                                    id="resident_name"
+                                    name="resident_name"
+                                    required
+                                    placeholder="Your Name"
+                                    className="h-14 rounded-[1.25rem] border-gray-100 bg-gray-50 dark:bg-black/40 dark:border-white/10 px-6 text-sm font-black focus:ring-primary-500 shadow-sm placeholder:text-gray-400 dark:text-white transition-all group-hover:bg-gray-100 dark:group-hover:bg-black/60"
+                                />
+                            </div>
+                        </div>
                     </div>
+
+                    {/* Phone Number */}
+                    <div className="space-y-3">
+                        <Label htmlFor="phone_number" className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-600/80 ml-2">Contact Number</Label>
+                        <div className="relative group">
+                            <Input
+                                id="phone_number"
+                                name="phone_number"
+                                required
+                                type="tel"
+                                placeholder="10-digit Mobile Number"
+                                className="h-14 rounded-[1.25rem] border-gray-100 bg-gray-50 dark:bg-black/40 dark:border-white/10 px-6 text-sm font-black focus:ring-primary-500 shadow-sm placeholder:text-gray-400 dark:text-white transition-all group-hover:bg-gray-100 dark:group-hover:bg-black/60"
+                            />
+                        </div>
+                    </div>
+
 
                     {/* Category Selection */}
                     <div className="space-y-4">

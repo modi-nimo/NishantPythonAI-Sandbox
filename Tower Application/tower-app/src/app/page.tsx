@@ -15,19 +15,23 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { transformGDriveUrl } from "@/utils/media"
 
+import { getTowerMetadata } from "@/lib/actions/metadata"
+
 export default async function Home() {
   const supabase = await createClient()
+  const metadata = await getTowerMetadata()
 
   // Fetch all relevant data for the Command Center
   const [noticesRes, eventsRes, docsRes] = await Promise.all([
-    supabase.from("notices").select("*").order("created_at", { ascending: false }).limit(5),
-    supabase.from("events").select("*").order("event_date", { ascending: true }).limit(3),
-    supabase.from("documents").select("*").order("created_at", { ascending: false }).limit(4)
+    supabase.from("notices").select("*").order("date", { ascending: false }).limit(5),
+    supabase.from("events").select("*").order("date", { ascending: true }).limit(3),
+    supabase.from("documents").select("*").order("updated_at", { ascending: false }).limit(4)
   ])
 
   const notices = noticesRes.data || []
   const events = eventsRes.data || []
   const documents = docsRes.data || []
+
 
   return (
     <div className="space-y-10 pb-10">
@@ -48,7 +52,7 @@ export default async function Home() {
           >
             <Badge className="mb-6 bg-white/10 text-white border-white/20 hover:bg-white/20 px-4 py-1.5 backdrop-blur-md rounded-full text-xs font-bold tracking-widest uppercase">
               <Sparkles className="h-3 w-3 mr-2 text-yellow-400" />
-              Welcome to {process.env.NEXT_PUBLIC_TOWER_NAME || "Tower Pulse"}
+              Welcome to {metadata.name || "Tower Pulse"}
             </Badge>
           </motion.div>
 
