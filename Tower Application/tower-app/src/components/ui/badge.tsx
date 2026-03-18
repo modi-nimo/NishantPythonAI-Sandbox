@@ -1,4 +1,4 @@
-import { cn } from "../../lib/utils"
+import { cn } from "@/utils/cn"
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
     variant?: 'default' | 'success' | 'warning' | 'error' | 'info'

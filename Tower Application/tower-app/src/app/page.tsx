@@ -1,4 +1,4 @@
-import { createClient } from "../utils/supabase/server"
+import { createClient } from "@/utils/supabase/server"
 import {
   Bell,
   Calendar,
@@ -11,11 +11,10 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import * as motion from "framer-motion/client"
-import { Badge } from "../components/ui/badge"
-import { Button } from "../components/ui/button"
-import { transformGDriveUrl } from "../utils/media"
-
-import { getTowerMetadata } from "../lib/actions/metadata"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { transformGDriveUrl } from "@/utils/media"
+import { getTowerMetadata } from "@/app/actions/metadata"
 
 export default async function Home() {
   const supabase = await createClient()
@@ -67,7 +66,7 @@ export default async function Home() {
 
           <div className="flex flex-wrap gap-4">
             <Button asChild size="lg" className="bg-primary-500 hover:bg-primary-600 rounded-2xl px-8 h-14 font-bold shadow-xl shadow-primary-500/20 group">
-              <Link href="/complaint">
+              <Link href="/complaints">
                 <Inbox className="mr-2 h-5 w-5" /> File an Issue
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
