@@ -150,3 +150,4 @@ CREATE TRIGGER on_complaint_status_change
 
 -- 6. INITIAL DATA
 INSERT INTO tower_metadata (name, address) VALUES ('Sample Tower', '123 Main St, City');
+
