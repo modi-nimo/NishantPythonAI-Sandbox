@@ -22,10 +22,14 @@ export default async function Home() {
 
   // Fetch all relevant data for the Command Center
   const [noticesRes, eventsRes, docsRes] = await Promise.all([
-    supabase.from("notices").select("*").order("date", { ascending: false }).limit(5),
+    supabase.from("notices").select("*").order("created_at", { ascending: false }).limit(5),
     supabase.from("events").select("*").order("date", { ascending: true }).limit(3),
     supabase.from("documents").select("*").order("updated_at", { ascending: false }).limit(4)
   ])
+
+  if (noticesRes.error) {
+    console.error("Failed to load recent notices for home page:", noticesRes.error.message)
+  }
 
   const notices = noticesRes.data || []
   const events = eventsRes.data || []
