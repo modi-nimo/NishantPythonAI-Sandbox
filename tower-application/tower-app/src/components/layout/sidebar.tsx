@@ -87,7 +87,7 @@ export function Sidebar() {
 
                 <div className="px-2 pt-2">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400/60 leading-relaxed">
-                        Vibe coded by <br />
+                        Coded by <br />
                         <span className="text-primary-600 dark:text-primary-400">Nishant Modi</span>
                     </p>
                 </div>

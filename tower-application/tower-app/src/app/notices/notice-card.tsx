@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Clock, ShieldCheck } from "lucide-react"
+import { Clock, ExternalLink, ShieldCheck } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Modal } from "@/components/ui/modal"
 import { cn } from "@/utils/cn"
@@ -16,14 +16,81 @@ interface Notice {
     image_url?: string | null
 }
 
+const urlPattern = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi
+
+function renderInlineContent(text: string) {
+    const parts = text.split(urlPattern)
+
+    return parts.map((part, index) => {
+        const isUrl = urlPattern.test(part)
+        urlPattern.lastIndex = 0
+
+        if (!isUrl) {
+            return <span key={`${part}-${index}`}>{part}</span>
+        }
+
+        const href = part.startsWith("http") ? part : `https://${part}`
+
+        return (
+            <a
+                key={`${part}-${index}`}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 font-semibold text-primary-600 underline decoration-primary-300 underline-offset-4 transition-colors hover:text-primary-700"
+                onClick={(event) => event.stopPropagation()}
+            >
+                {part}
+                <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+        )
+    })
+}
+
+function renderNoticeContent(content: string) {
+    return content
+        .split(/\n\s*\n/)
+        .map((block) => block.trim())
+        .filter(Boolean)
+        .map((block, index) => {
+            const lines = block.split("\n").map((line) => line.trim()).filter(Boolean)
+            const isList = lines.length > 1 && lines.every((line) => /^([•\-*]|\d+\.)\s+/.test(line))
+
+            if (isList) {
+                return (
+                    <ul key={`list-${index}`} className="space-y-3 pl-6 text-base leading-8 text-slate-700 dark:text-gray-300 list-disc marker:text-primary-500">
+                        {lines.map((line, lineIndex) => (
+                            <li key={`item-${lineIndex}`}>
+                                {renderInlineContent(line.replace(/^([•\-*]|\d+\.)\s+/, ""))}
+                            </li>
+                        ))}
+                    </ul>
+                )
+            }
+
+            return (
+                <p key={`paragraph-${index}`} className="text-lg leading-9 text-slate-700 dark:text-gray-300">
+                    {lines.map((line, lineIndex) => (
+                        <span key={`line-${lineIndex}`}>
+                            {renderInlineContent(line)}
+                            {lineIndex < lines.length - 1 && <br />}
+                        </span>
+                    ))}
+                </p>
+            )
+        })
+}
+
 export function NoticeCard({ notice }: { notice: Notice }) {
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     return (
         <>
-            <div
+            <button
+                type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="glass-card p-8 rounded-[2.5rem] flex flex-col justify-between group hover:border-primary-500/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/10 cursor-pointer"
+                className="glass-card w-full p-8 rounded-[2.5rem] flex flex-col justify-between text-left group hover:border-primary-500/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60"
+                aria-label={`Open notice: ${notice.title}`}
             >
                 <div className="space-y-4">
                     <div className="flex justify-between items-start">
@@ -51,7 +118,7 @@ export function NoticeCard({ notice }: { notice: Notice }) {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                         </div>
                     )}
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed line-clamp-6">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed line-clamp-6 whitespace-pre-line">
                         {notice.content}
                     </p>
                 </div>
@@ -60,9 +127,12 @@ export function NoticeCard({ notice }: { notice: Notice }) {
                         <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50" />
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Circular</span>
                     </div>
-                    <ShieldCheck className="h-4 w-4 text-primary-500/30" />
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary-500/60">
+                        <span>Open Notice</span>
+                        <ShieldCheck className="h-4 w-4 text-primary-500/30" />
+                    </div>
                 </div>
-            </div>
+            </button>
 
             <Modal
                 isOpen={isModalOpen}
@@ -94,11 +164,8 @@ export function NoticeCard({ notice }: { notice: Notice }) {
                         </div>
                     )}
 
-                    <div className="prose prose-slate dark:prose-invert max-w-none prose-p:leading-relaxed prose-lg font-medium text-slate-700 dark:text-gray-300">
-                        {/* Splitting by newlines to render paragraphs properly */}
-                        {notice.content.split('\n').map((paragraph, i) => (
-                            <p key={i}>{paragraph}</p>
-                        ))}
+                    <div className="max-w-none space-y-6 font-medium">
+                        {renderNoticeContent(notice.content)}
                     </div>
                 </div>
             </Modal>

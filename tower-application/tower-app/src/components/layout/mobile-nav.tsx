@@ -90,7 +90,7 @@ export function MobileNav() {
 
                             <div className="px-4">
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400/60 leading-relaxed">
-                                    Vibe coded by <br />
+                                    Coded by <br />
                                     <span className="text-primary-600 dark:text-primary-400 text-sm">Nishant Modi</span>
                                 </p>
                             </div>
