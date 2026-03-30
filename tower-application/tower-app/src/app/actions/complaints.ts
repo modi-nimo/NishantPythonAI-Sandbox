@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/utils/supabase/server"
 import { sendTelegramNotification } from "@/utils/telegram"
+import { assertSubscriptionActive } from "@/utils/subscription"
 
 function escapeHtml(value: string) {
     return value
@@ -12,6 +13,8 @@ function escapeHtml(value: string) {
 }
 
 export async function submitComplaint(formData: FormData) {
+    assertSubscriptionActive()
+
     const supabase = await createClient()
 
     const payload = {

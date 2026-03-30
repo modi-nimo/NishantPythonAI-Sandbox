@@ -32,7 +32,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 
 TELEGRAM_BOT_TOKEN="your-bot-token"
 TELEGRAM_CHAT_ID="your-chat-id"
+SUBSCRIPTION_VALID_UNTIL="2026-04-30T23:59:59+05:30"
 ```
+
+`SUBSCRIPTION_VALID_UNTIL` is enforced server-side. If it is missing or invalid, the deployment is treated as expired and the app is locked to the subscription expiry page.
 
 ### 4. Admin Management (Security 🔒)
 To ensure security, the admin dashboard uses BCrypt password hashing. **Do not store plain-text passwords in the `admins` table.**

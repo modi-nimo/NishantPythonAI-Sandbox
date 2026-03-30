@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { clearAdminSession } from "@/utils/auth-session"
+import { assertSubscriptionActive } from "@/utils/subscription"
 
 export async function adminLogout() {
     await clearAdminSession()
@@ -11,6 +12,8 @@ export async function adminLogout() {
 }
 
 export async function createNotice(formData: FormData) {
+    assertSubscriptionActive()
+
     const supabase = await createClient()
     const { sendTelegramNotification } = await import('@/utils/telegram')
 
@@ -39,6 +42,8 @@ export async function createNotice(formData: FormData) {
 }
 
 export async function updateComplaintStatus(complaintId: string, newStatus: string) {
+    assertSubscriptionActive()
+
     const supabase = await createClient()
 
     const { error } = await supabase
@@ -57,6 +62,8 @@ export async function updateComplaintStatus(complaintId: string, newStatus: stri
 }
 
 export async function deleteComplaint(complaintId: string) {
+    assertSubscriptionActive()
+
     const supabase = await createClient()
 
     const { error } = await supabase
@@ -75,6 +82,8 @@ export async function deleteComplaint(complaintId: string) {
 }
 
 export async function addComplaintComment(complaintId: string, message: string) {
+    assertSubscriptionActive()
+
     const supabase = await createClient()
 
     const { error } = await supabase
@@ -91,6 +100,8 @@ export async function addComplaintComment(complaintId: string, message: string) 
 }
 
 export async function deleteNotice(noticeId: string) {
+    assertSubscriptionActive()
+
     const supabase = await createClient()
 
     const { error } = await supabase

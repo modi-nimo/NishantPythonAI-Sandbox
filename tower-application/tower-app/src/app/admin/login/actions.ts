@@ -4,8 +4,13 @@ import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
 import bcrypt from "bcryptjs"
 import { setAdminSession } from "@/utils/auth-session"
+import { isSubscriptionActive } from "@/utils/subscription"
 
 export async function login(formData: FormData) {
+    if (!isSubscriptionActive()) {
+        redirect("/subscription-expired")
+    }
+
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
