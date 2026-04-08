@@ -100,6 +100,7 @@ const App = () => {
     }, []);
 
     const [showAddForm, setShowAddForm] = useState(false);
+    const [receiptType, setReceiptType] = useState('Maintenance');
     const [editingRecord, setEditingRecord] = useState(null);
     const [newExpense, setNewExpense] = useState({
         date: new Date().toISOString().split('T')[0],
@@ -701,7 +702,10 @@ const App = () => {
                                 <h2 style={{ marginBottom: '8px' }}>Income Ledger</h2>
                                 <p style={{ color: 'var(--text-dim)', margin: 0 }}>Verified maintenance receipts and payment reconciliations.</p>
                             </div>
-                            <button className="btn btn-primary" onClick={() => setShowAddForm(showAddForm === 'receipt' ? false : 'receipt')}>
+                            <button className="btn btn-primary" onClick={() => {
+                                setReceiptType('Maintenance');
+                                setShowAddForm(showAddForm === 'receipt' ? false : 'receipt');
+                            }}>
                                 {showAddForm === 'receipt' ? 'Cancel' : '+ Record Receipt'}
                             </button>
                         </div>
@@ -734,7 +738,9 @@ const App = () => {
                                     else {
                                         await supabase.from('bank_ledger').insert([{
                                             date: formData.get('date'),
-                                            description: `${formData.get('flatNo')} Maintenance - ${formData.get('month')}`,
+                                            description: receiptType === 'Maintenance' 
+                                                ? `${formData.get('flatNo')} Maintenance - ${formData.get('month')}`
+                                                : `Adhoc Receipt: ${formData.get('flatNo')} - ${formData.get('month')}`,
                                             debit: 0,
                                             credit: amount,
                                             notes: formData.get('notes'),
@@ -745,13 +751,30 @@ const App = () => {
                                         setShowAddForm(false);
                                     }
                                 }} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                    <div className="form-group"><label>Date</label><input type="date" name="date" required /></div>
-                                    <div className="form-group"><label>Flat No</label>
-                                        <select name="flatNo">
-                                            {flats.map(f => <option key={f.id} value={f.flat_no}>{f.flat_no}</option>)}
-                                        </select>
+                                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                        <label>Receipt Source</label>
+                                        <div style={{ display: 'flex', gap: '20px', marginTop: '8px' }}>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                                <input type="radio" name="sourceType" value="Maintenance" checked={receiptType === 'Maintenance'} onChange={() => setReceiptType('Maintenance')} /> Maintenance (Resident)
+                                            </label>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                                <input type="radio" name="sourceType" value="Adhoc" checked={receiptType === 'Adhoc'} onChange={() => setReceiptType('Adhoc')} /> Adhoc (External - Builder/Vendor)
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div className="form-group"><label>Month</label><input name="month" placeholder="Apr-26" required /></div>
+                                    <div className="form-group"><label>Date</label><input type="date" name="date" required /></div>
+                                    {receiptType === 'Maintenance' ? (
+                                        <div className="form-group"><label>Flat No</label>
+                                            <select name="flatNo">
+                                                {flats.map(f => <option key={f.id} value={f.flat_no}>{f.flat_no}</option>)}
+                                            </select>
+                                        </div>
+                                    ) : (
+                                        <div className="form-group"><label>Payer Name</label>
+                                            <input name="flatNo" placeholder="Enter Entity Name (e.g. Builder)" required />
+                                        </div>
+                                    )}
+                                    <div className="form-group"><label>Period / Purpose</label><input name="month" placeholder="Apr-26 or Event Name" required /></div>
                                     <div className="form-group"><label>Amount Received</label><input type="number" name="amount" required /></div>
                                     <div className="form-group"><label>Payment Mode</label>
                                         <select name="mode">
@@ -819,7 +842,7 @@ const App = () => {
                                         <tr>
                                             <th>Entry ID</th>
                                             <th>Date & Period</th>
-                                            <th>Flat No</th>
+                                            <th>Source / Flat No</th>
                                             <th>Financials</th>
                                             <th>Reference</th>
                                             <th>Audit</th>
@@ -834,7 +857,12 @@ const App = () => {
                                                     <div style={{ fontWeight: 600 }}>{r.date}</div>
                                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{r.month}</div>
                                                 </td>
-                                                <td style={{ fontWeight: 700 }}>{r.flat_no}</td>
+                                                <td style={{ fontWeight: 700 }}>
+                                                    {r.flat_no}
+                                                    {!flats.some(f => f.flat_no === r.flat_no) && (
+                                                        <span style={{ marginLeft: '8px', fontSize: '0.65rem', background: 'var(--primary)', color: 'white', padding: '2px 6px', borderRadius: '4px', verticalAlign: 'middle' }}>ADHOC</span>
+                                                    )}
+                                                </td>
                                                 <td>
                                                     <div style={{ fontWeight: 700, color: 'var(--success)' }}>+{formatCurrency(r.amount)}</div>
                                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{r.mode}</div>
