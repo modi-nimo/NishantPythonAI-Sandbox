@@ -1,4 +1,4 @@
-import { getGoogleDriveAccessToken } from "../../../../lib/googleDrive";
+import { getGoogleDriveAccessToken } from "../../../../server/googleDrive";
 
 export const runtime = "nodejs";
 

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PhotoGallery } from "./components/PhotoGallery";
-import { fetchPublishedDrivePhotos } from "./lib/googleDrive";
+import { fetchPublishedDrivePhotos } from "./server/googleDrive";
 
 export const runtime = "nodejs";
 export const revalidate = 60;

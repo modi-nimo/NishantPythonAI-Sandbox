@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchPublishedDrivePhotos } from "../../lib/googleDrive";
+import { fetchPublishedDrivePhotos } from "../../server/googleDrive";
 
 export const runtime = "nodejs";
 

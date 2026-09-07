@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDriveConfig } from "../../lib/googleDrive";
+import { getDriveConfig } from "../../server/googleDrive";
 
 export const runtime = "nodejs";
 

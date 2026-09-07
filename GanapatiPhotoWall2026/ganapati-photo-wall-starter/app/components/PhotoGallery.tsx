@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import type { GalleryPhoto } from "../lib/photos";
+import type { GalleryPhoto } from "../server/photos";
 
 type PhotoGalleryProps = {
   photos: GalleryPhoto[];
