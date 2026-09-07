@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ganapati Photo Wall 2026",
-  description: "Share and celebrate Ganapati festival photos with the community.",
+  title: "Sensorium Cha Vighnaharta",
+  description:
+    "A shared Ganapati celebration memory wall for Sensorium residents.",
 };
 
 export default function RootLayout({

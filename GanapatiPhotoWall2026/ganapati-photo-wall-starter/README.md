@@ -1,12 +1,12 @@
-# Ganapati Photo Wall 2026 Organizer Guide
+# Sensorium Cha Vighnaharta Organizer Guide
 
-This website lets visitors see Ganapati festival photos and share their own
-moments through a Google Form.
+This website is a common Ganapati celebration page for Sensorium residents.
+Residents can share photos, and everyone can enjoy the society memory wall.
 
 ## What Visitors Can Do
 
-- Open the Photo Wall.
-- See recent community photos.
+- Open the society Photo Wall.
+- See recent Ganapati celebration photos.
 - Tap a photo to view it larger.
 - Open the sharing page.
 - Submit a festival photo through the Google Form.
@@ -27,31 +27,22 @@ Share-photo page:
 
 ## Google Form
 
-The site embeds this public responder URL:
+The site sends residents to this public Google Form:
 
 ```text
 https://docs.google.com/forms/d/1FJ1bAcL3eqps91xjSW1uJHU1INnrBbPiXpRFNL9yt-c/viewform
 ```
 
-Do not embed the Google Form `/edit` URL on the public site.
+Do not use the Google Form `/edit` URL for visitors.
 
-## Photo Approval Flow
-
-Use these two folders in Google Drive:
-
-```text
-Pending
-Published
-```
+## Photo Flow
 
 Simple workflow:
 
-1. New form uploads arrive from Google Forms.
-2. You review the submitted photos.
-3. Move selected photos into the `Published` folder.
-4. The website shows photos from `Published`.
-
-Only photos in `Published` appear on the public wall.
+1. A resident opens `/upload`.
+2. They tap `Open Photo Form`.
+3. They upload a Ganapati festival photo.
+4. The photo appears on the Sensorium Photo Wall from the connected Drive folder.
 
 ## Start The Website On Your Computer
 
@@ -79,13 +70,13 @@ npm run build
 
 Both commands should finish without errors.
 
-## Published Folder ID
+## Google Drive Folder
 
-The website needs the folder ID for the `Published` folder.
+The website reads photos from the folder ID in `.env.local`.
 
-To find the folder ID:
+To find a folder ID:
 
-1. Open the `Published` folder in Google Drive.
+1. Open the folder in Google Drive.
 2. Look at the browser address bar.
 3. Copy the long ID after `/folders/`.
 
@@ -95,15 +86,9 @@ Example:
 https://drive.google.com/drive/folders/PASTE_THIS_PART_ONLY
 ```
 
-Your current Published folder ID is:
-
-```text
-1-aw-B_5NYVY5JSs7X_rDSsdPbMwpTXV-
-```
-
 ## Google Account Setup
 
-The website uses a Google service account to read selected photos.
+The website uses a Google service account to read photos.
 
 Service account email:
 
@@ -111,7 +96,7 @@ Service account email:
 sensorium@sensorium-507910.iam.gserviceaccount.com
 ```
 
-Make sure the `Published` folder is shared with this email as `Viewer`.
+Make sure the photo folder is shared with this email as `Viewer`.
 
 If you ever need to create a new key:
 
@@ -133,7 +118,7 @@ It should look like this:
 ```bash
 GOOGLE_CLIENT_EMAIL="sensorium@sensorium-507910.iam.gserviceaccount.com"
 GOOGLE_PRIVATE_KEY="your-private-key"
-GOOGLE_DRIVE_FOLDER_ID="1-aw-B_5NYVY5JSs7X_rDSsdPbMwpTXV-"
+GOOGLE_DRIVE_FOLDER_ID="your-photo-folder-id"
 ```
 
 Keep `.env.local` private. Do not share it publicly.
@@ -164,8 +149,6 @@ Good result:
 status: connected
 ```
 
-If there are no photos yet, `status: empty` is also okay.
-
 ## Deploy On Vercel
 
 This is the simplest deployment path for a Next.js app.
@@ -188,15 +171,17 @@ GOOGLE_DRIVE_FOLDER_ID
 
 After deployment, open the Vercel URL and check:
 
-- `/` shows the photo wall.
-- `/upload` shows the Google Form.
+- `/` shows the Sensorium Photo Wall.
+- `/upload` opens the sharing page.
 - `/api/health` says `googleDriveConfigured: true`.
-- `/api/photos` says `status: connected` or `status: empty`.
+- `/api/photos` says `status: connected`.
 
 ## How New Photos Appear
 
 The home page refreshes photo data every 60 seconds.
 
-When you add a selected image to the `Published` folder, it should appear on the public wall after the refresh.
+When a resident uploads a photo into the connected folder, it should appear on
+the Photo Wall after the refresh.
 
-If something goes wrong, the site shows a friendly fallback instead of breaking for visitors.
+If something goes wrong, the site shows a friendly fallback instead of breaking
+for visitors.
