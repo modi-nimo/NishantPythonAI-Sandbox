@@ -470,6 +470,34 @@ select {
   color: rgba(255, 248, 239, 0.74);
 }
 
+.sponsors-section {
+  padding: 0 0 76px;
+}
+
+.sponsor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sponsor-card {
+  min-height: 128px;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  border: 1px solid rgba(152, 60, 11, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 253, 248, 0.82);
+  box-shadow: 0 16px 34px rgba(93, 48, 16, 0.09);
+}
+
+.sponsor-card img {
+  width: 100%;
+  max-width: 210px;
+  height: 86px;
+  object-fit: contain;
+}
+
 .cta-section {
   padding: 0 0 76px;
 }
@@ -653,6 +681,10 @@ select {
   .steps-grid {
     grid-template-columns: 1fr;
   }
+
+  .sponsor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 700px) {
@@ -812,6 +844,25 @@ select {
 
   .steps-section {
     padding: 0 0 44px;
+  }
+
+  .sponsors-section {
+    padding: 0 0 44px;
+  }
+
+  .sponsor-grid {
+    gap: 10px;
+  }
+
+  .sponsor-card {
+    min-height: 104px;
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .sponsor-card img {
+    height: 68px;
+    max-width: 146px;
   }
 
   .steps-grid {

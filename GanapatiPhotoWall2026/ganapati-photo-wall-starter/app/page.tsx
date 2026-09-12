@@ -6,6 +6,25 @@ import { fetchPublishedDrivePhotos } from "./server/googleDrive";
 export const runtime = "nodejs";
 export const revalidate = 60;
 
+const sponsors = [
+  {
+    name: "IDBI Bank",
+    logo: "/sponsors/idbi.jpg",
+  },
+  {
+    name: "Sid's Farm",
+    logo: "/sponsors/sidfarm.png",
+  },
+  {
+    name: "Shapoorji Pallonji Vyomora Hinjawadi",
+    logo: "/sponsors/shapoorji-pallonji-vyomora.png",
+  },
+  {
+    name: "Insta Help by Urban Company",
+    logo: "/sponsors/urbancompany.jpg",
+  },
+];
+
 export default async function HomePage() {
   const photoResult = await fetchPublishedDrivePhotos();
   const photoCount = photoResult.photos.length;
@@ -125,6 +144,35 @@ export default async function HomePage() {
               <h3>Enjoy the wall</h3>
               <p>Come back anytime to see new photos from Sensorium residents.</p>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="sponsors-section" aria-labelledby="sponsors-heading">
+        <div className="container">
+          <div className="section-heading section-heading-centered">
+            <div>
+              <div className="section-kicker">WITH GRATITUDE</div>
+              <h2 id="sponsors-heading">Our Sponsors</h2>
+            </div>
+            <p>
+              Thank you to the supporters helping make Sensorium&apos;s Ganapati
+              celebration special for everyone.
+            </p>
+          </div>
+
+          <div className="sponsor-grid">
+            {sponsors.map((sponsor) => (
+              <div className="sponsor-card" key={sponsor.name}>
+                <Image
+                  src={sponsor.logo}
+                  alt={`${sponsor.name} logo`}
+                  width={360}
+                  height={180}
+                  sizes="(max-width: 700px) 50vw, 260px"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>
