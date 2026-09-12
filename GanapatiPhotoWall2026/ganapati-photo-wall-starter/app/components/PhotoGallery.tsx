@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
 import type { GalleryPhoto } from "../server/photos";
 
@@ -43,13 +43,11 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
             aria-label={`Open photo: ${photo.caption}`}
           >
             <span className="photo-frame">
-              <Image
+              <img
                 src={photo.src}
                 alt={photo.alt}
-                fill
-                sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
-                priority={index < 2}
-                unoptimized={photo.source === "drive"}
+                loading={index < 2 ? "eager" : "lazy"}
+                decoding="async"
               />
             </span>
             <span className="photo-caption">
@@ -80,13 +78,9 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
             className="lightbox-content"
             onClick={(event) => event.stopPropagation()}
           >
-            <Image
+            <img
               src={selectedPhoto.src}
               alt={selectedPhoto.alt}
-              width={1200}
-              height={900}
-              sizes="95vw"
-              unoptimized={selectedPhoto.source === "drive"}
             />
             <figcaption>
               <strong>{selectedPhoto.caption}</strong>
