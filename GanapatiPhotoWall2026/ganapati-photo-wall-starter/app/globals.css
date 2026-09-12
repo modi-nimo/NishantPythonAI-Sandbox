@@ -31,10 +31,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-body:has(.mobile-share-bar) {
-  padding-bottom: 0;
-}
-
 body::before {
   content: "";
   position: fixed;
@@ -507,10 +503,6 @@ select {
   gap: 16px;
 }
 
-.mobile-share-bar {
-  display: none;
-}
-
 .upload-topbar {
   position: sticky;
   top: 0;
@@ -661,10 +653,6 @@ select {
 }
 
 @media (max-width: 700px) {
-  body:has(.mobile-share-bar) {
-    padding-bottom: 78px;
-  }
-
   .container,
   .narrow {
     width: min(100% - 24px, 1160px);
@@ -702,36 +690,36 @@ select {
   }
 
   .hero {
-    padding: 22px 0 34px;
+    padding: 18px 0 34px;
   }
 
   .hero-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .hero-copy-block {
-    display: contents;
+    display: grid;
+    gap: 12px;
   }
 
   .eyebrow {
-    order: 1;
     width: 100%;
     font-size: 11px;
   }
 
   .hero h1 {
-    order: 2;
     width: 100%;
-    margin: 8px 0 0;
-    font-size: clamp(38px, 13vw, 54px);
-    line-height: 0.98;
+    margin: 0;
+    font-size: clamp(34px, 11vw, 46px);
+    line-height: 1;
   }
 
   .hero-image-panel {
-    order: 3;
-    width: 100%;
+    order: -1;
+    width: min(100%, 390px);
+    margin: 0 auto;
     min-height: auto;
     border-width: 4px;
     border-radius: 20px;
@@ -739,7 +727,6 @@ select {
   }
 
   .hero-copy {
-    order: 4;
     font-size: 16px;
     line-height: 1.55;
   }
@@ -750,7 +737,6 @@ select {
   }
 
   .hero-actions {
-    order: 5;
     width: 100%;
     margin-top: 0;
   }
@@ -760,7 +746,6 @@ select {
   }
 
   .hero-meta {
-    order: 6;
     display: flex;
     width: 100%;
     margin-top: 0;
@@ -813,8 +798,9 @@ select {
   .photo-card-landscape .photo-frame,
   .photo-card-square .photo-frame,
   .photo-card-tall .photo-frame {
-    min-height: auto;
-    aspect-ratio: 1;
+    height: min(72vw, 330px);
+    min-height: 230px;
+    aspect-ratio: auto;
   }
 
   .photo-caption {
@@ -909,23 +895,6 @@ select {
   .footer-inner span {
     display: block;
     margin-bottom: 6px;
-  }
-
-  .mobile-share-bar {
-    position: fixed;
-    z-index: 30;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    display: inline-flex;
-    min-height: 54px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    color: #fff;
-    background: linear-gradient(135deg, var(--saffron), var(--rose));
-    box-shadow: 0 16px 34px rgba(152, 60, 11, 0.28);
-    font-weight: 900;
   }
 }
 

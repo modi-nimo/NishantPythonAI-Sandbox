@@ -145,14 +145,42 @@ function getAspect(file: DriveFile): GalleryPhoto["aspect"] {
   return "portrait";
 }
 
+function isUuidLike(value: string) {
+  return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+    value.trim(),
+  );
+}
+
+function toTitleCase(value: string) {
+  return value
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+}
+
+function getDisplayName(fileName: string) {
+  const withoutExtension = fileName.replace(/\.[^/.]+$/, "").trim();
+  const parts = withoutExtension
+    .split(/\s+-\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length > 1 && isUuidLike(parts[0])) {
+    return toTitleCase(parts.slice(1).join(" - "));
+  }
+
+  return toTitleCase(withoutExtension) || "Ganapati festival moment";
+}
+
 function mapDriveFileToPhoto(file: DriveFile): GalleryPhoto {
-  const cleanName = file.name.replace(/\.[^/.]+$/, "");
+  const displayName = getDisplayName(file.name);
 
   return {
     id: file.id,
     src: `/api/photos/${file.id}/image`,
-    alt: `Ganapati festival photo: ${cleanName}`,
-    caption: cleanName || "Ganapati festival moment",
+    alt: `Ganapati festival photo: ${displayName}`,
+    caption: displayName,
     credit: "Community photo",
     aspect: getAspect(file),
     source: "drive",

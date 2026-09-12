@@ -31,9 +31,9 @@ export default async function HomePage() {
             <div className="eyebrow">GANPATI FESTIVAL 2026</div>
             <h1>Sensorium Cha Vighnaharta</h1>
             <p className="hero-copy">
-              Our society&apos;s shared album for Bappa&apos;s darshan, aarti,
-              decorations, prasad, smiles, family moments, and every celebration
-              we want to remember together.
+              A common photo wall for Sensorium residents to share Bappa&apos;s
+              darshan, aarti, decorations, prasad, smiles, and celebration
+              memories.
             </p>
 
             <div className="hero-actions">
@@ -148,10 +148,6 @@ export default async function HomePage() {
           <span>गणपती बाप्पा मोरया</span>
         </div>
       </footer>
-
-      <Link href="/upload" className="mobile-share-bar">
-        Share Your Photo
-      </Link>
     </main>
   );
 }
