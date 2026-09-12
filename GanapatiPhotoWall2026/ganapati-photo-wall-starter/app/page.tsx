@@ -148,6 +148,10 @@ export default async function HomePage() {
           <span>गणपती बाप्पा मोरया</span>
         </div>
       </footer>
+
+      <Link href="/upload" className="mobile-share-bar">
+        Share Your Photo
+      </Link>
     </main>
   );
 }
