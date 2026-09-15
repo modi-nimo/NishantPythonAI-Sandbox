@@ -2,9 +2,13 @@ import { createSign } from "node:crypto";
 import type { GalleryPhoto, PhotoResult } from "./photos";
 import { getFallbackPhotos } from "./photos";
 
-const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.readonly";
+const GOOGLE_API_SCOPES = [
+  "https://www.googleapis.com/auth/drive.readonly",
+  "https://www.googleapis.com/auth/spreadsheets.readonly",
+].join(" ");
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const DRIVE_FILES_URL = "https://www.googleapis.com/drive/v3/files";
+const SHEETS_VALUES_URL = "https://sheets.googleapis.com/v4/spreadsheets";
 const TOKEN_LIFETIME_SECONDS = 3600;
 
 type DriveFile = {
@@ -24,12 +28,20 @@ type AccessToken = {
   expiresAt: number;
 };
 
+type ResponseLabel = {
+  caption: string;
+  uploader: string;
+};
+
 let cachedAccessToken: AccessToken | null = null;
 
 export function getDriveConfig() {
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
   const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+  const responsesSheetId = process.env.GOOGLE_FORM_RESPONSES_SHEET_ID;
+  const responsesSheetRange =
+    process.env.GOOGLE_FORM_RESPONSES_SHEET_RANGE || "Form Responses 1";
 
   if (
     !clientEmail ||
@@ -40,7 +52,13 @@ export function getDriveConfig() {
     return null;
   }
 
-  return { clientEmail, privateKey, folderId };
+  return {
+    clientEmail,
+    privateKey,
+    folderId,
+    responsesSheetId,
+    responsesSheetRange,
+  };
 }
 
 function base64UrlEncode(value: string) {
@@ -59,7 +77,7 @@ function createJwt(clientEmail: string, privateKey: string) {
   const claimSet = base64UrlEncode(
     JSON.stringify({
       iss: clientEmail,
-      scope: DRIVE_SCOPE,
+      scope: GOOGLE_API_SCOPES,
       aud: TOKEN_URL,
       exp: now + TOKEN_LIFETIME_SECONDS,
       iat: now,
@@ -159,7 +177,18 @@ function cleanLabelPart(value: string) {
     .replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
 }
 
-function getDisplayName(fileName: string) {
+function getDisplayName(fileName: string, responseLabel?: ResponseLabel) {
+  const responseCaption = cleanLabelPart(responseLabel?.caption ?? "");
+  const responseUploader = cleanLabelPart(responseLabel?.uploader ?? "");
+
+  if (responseCaption && responseUploader) {
+    return `${responseCaption} - ${responseUploader}`;
+  }
+
+  if (responseCaption) {
+    return responseCaption;
+  }
+
   const withoutExtension = fileName.replace(/\.[^/.]+$/, "").trim();
   let parts = withoutExtension
     .split(/\s+-\s+/)
@@ -179,8 +208,82 @@ function getDisplayName(fileName: string) {
   return cleanedParts[0] || "Ganapati festival moment";
 }
 
-function mapDriveFileToPhoto(file: DriveFile): GalleryPhoto {
-  const displayName = getDisplayName(file.name);
+function normalizeHeader(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function findHeaderIndex(headers: string[], candidates: string[]) {
+  const normalizedCandidates = candidates.map(normalizeHeader);
+
+  return headers.findIndex((header) => {
+    const normalizedHeader = normalizeHeader(header);
+
+    return normalizedCandidates.some((candidate) =>
+      normalizedHeader.includes(candidate),
+    );
+  });
+}
+
+function extractDriveFileIds(value: string) {
+  return Array.from(
+    value.matchAll(/(?:id=|\/d\/|\/file\/d\/)?([a-zA-Z0-9_-]{25,})/g),
+    (match) => match[1],
+  );
+}
+
+async function fetchResponseLabels(
+  accessToken: string,
+  sheetId?: string,
+  sheetRange?: string,
+) {
+  if (!sheetId) {
+    return new Map<string, ResponseLabel>();
+  }
+
+  const encodedRange = encodeURIComponent(sheetRange || "Form Responses 1");
+  const response = await fetch(
+    `${SHEETS_VALUES_URL}/${encodeURIComponent(sheetId)}/values/${encodedRange}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      next: { revalidate: 60 },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Google Sheets read failed with status ${response.status}.`);
+  }
+
+  const payload = (await response.json()) as { values?: string[][] };
+  const [headers = [], ...rows] = payload.values ?? [];
+  const captionIndex = findHeaderIndex(headers, ["captionforyourphoto"]);
+  const uploaderIndex = findHeaderIndex(headers, [
+    "personwhouploadedit",
+    "uploadedby",
+    "yourname",
+    "name",
+  ]);
+  const labels = new Map<string, ResponseLabel>();
+
+  for (const row of rows) {
+    const caption = captionIndex >= 0 ? row[captionIndex] ?? "" : "";
+    const uploader = uploaderIndex >= 0 ? row[uploaderIndex] ?? "" : "";
+    const fileIds = row.flatMap((cell) => extractDriveFileIds(cell ?? ""));
+
+    for (const fileId of fileIds) {
+      labels.set(fileId, { caption, uploader });
+    }
+  }
+
+  return labels;
+}
+
+function mapDriveFileToPhoto(
+  file: DriveFile,
+  responseLabels: Map<string, ResponseLabel>,
+): GalleryPhoto {
+  const displayName = getDisplayName(file.name, responseLabels.get(file.id));
 
   return {
     id: file.id,
@@ -223,7 +326,21 @@ export async function fetchPublishedDrivePhotos(): Promise<PhotoResult> {
     }
 
     const payload = (await response.json()) as { files?: DriveFile[] };
-    const photos = (payload.files ?? []).map(mapDriveFileToPhoto);
+    let responseLabels = new Map<string, ResponseLabel>();
+
+    try {
+      responseLabels = await fetchResponseLabels(
+        accessToken,
+        config.responsesSheetId,
+        config.responsesSheetRange,
+      );
+    } catch (error) {
+      console.error(error);
+    }
+
+    const photos = (payload.files ?? []).map((file) =>
+      mapDriveFileToPhoto(file, responseLabels),
+    );
 
     if (photos.length === 0) {
       return {

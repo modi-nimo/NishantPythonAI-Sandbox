@@ -98,6 +98,9 @@ sensorium@sensorium-507910.iam.gserviceaccount.com
 
 Make sure the photo folder is shared with this email as `Viewer`.
 
+To show labels as `Caption for your Photo - Person who uploaded it`, also share
+the Google Form response Sheet with this same email as `Viewer`.
+
 If you ever need to create a new key:
 
 1. Go to Google Cloud Console.
@@ -119,6 +122,8 @@ It should look like this:
 GOOGLE_CLIENT_EMAIL="sensorium@sensorium-507910.iam.gserviceaccount.com"
 GOOGLE_PRIVATE_KEY="your-private-key"
 GOOGLE_DRIVE_FOLDER_ID="your-photo-folder-id"
+GOOGLE_FORM_RESPONSES_SHEET_ID="your-form-response-sheet-id"
+GOOGLE_FORM_RESPONSES_SHEET_RANGE="Form Responses 1"
 ```
 
 Keep `.env.local` private. Do not share it publicly.
@@ -165,6 +170,8 @@ This is the simplest deployment path for a Next.js app.
 GOOGLE_CLIENT_EMAIL
 GOOGLE_PRIVATE_KEY
 GOOGLE_DRIVE_FOLDER_ID
+GOOGLE_FORM_RESPONSES_SHEET_ID
+GOOGLE_FORM_RESPONSES_SHEET_RANGE
 ```
 
 8. Click `Deploy`.

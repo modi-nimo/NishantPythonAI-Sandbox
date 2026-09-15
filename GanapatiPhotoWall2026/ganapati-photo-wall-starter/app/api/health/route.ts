@@ -10,6 +10,9 @@ export async function GET() {
       Boolean(process.env.GOOGLE_PRIVATE_KEY) &&
       process.env.GOOGLE_PRIVATE_KEY !== "PASTE_PRIVATE_KEY_HERE",
     googleDriveFolderId: Boolean(process.env.GOOGLE_DRIVE_FOLDER_ID),
+    googleFormResponsesSheetId: Boolean(
+      process.env.GOOGLE_FORM_RESPONSES_SHEET_ID,
+    ),
   };
   const googleDriveConfigured = Boolean(getDriveConfig());
 
