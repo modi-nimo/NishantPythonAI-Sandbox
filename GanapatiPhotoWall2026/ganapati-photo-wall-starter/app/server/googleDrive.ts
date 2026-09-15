@@ -151,9 +151,9 @@ function isUuidLike(value: string) {
   );
 }
 
-function toTitleCase(value: string) {
+function cleanLabelPart(value: string) {
   return value
-    .replace(/[_-]+/g, " ")
+    .replace(/_+/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
@@ -161,16 +161,22 @@ function toTitleCase(value: string) {
 
 function getDisplayName(fileName: string) {
   const withoutExtension = fileName.replace(/\.[^/.]+$/, "").trim();
-  const parts = withoutExtension
+  let parts = withoutExtension
     .split(/\s+-\s+/)
     .map((part) => part.trim())
     .filter(Boolean);
 
   if (parts.length > 1 && isUuidLike(parts[0])) {
-    return toTitleCase(parts.slice(1).join(" - "));
+    parts = parts.slice(1);
   }
 
-  return toTitleCase(withoutExtension) || "Ganapati festival moment";
+  const cleanedParts = parts.map(cleanLabelPart).filter(Boolean);
+
+  if (cleanedParts.length >= 2) {
+    return `${cleanedParts[0]} - ${cleanedParts.slice(1).join(" - ")}`;
+  }
+
+  return cleanedParts[0] || "Ganapati festival moment";
 }
 
 function mapDriveFileToPhoto(file: DriveFile): GalleryPhoto {
@@ -181,7 +187,7 @@ function mapDriveFileToPhoto(file: DriveFile): GalleryPhoto {
     src: `/api/photos/${file.id}/image`,
     alt: `Ganapati festival photo: ${displayName}`,
     caption: displayName,
-    credit: "Community photo",
+    credit: "",
     aspect: getAspect(file),
     source: "drive",
   };

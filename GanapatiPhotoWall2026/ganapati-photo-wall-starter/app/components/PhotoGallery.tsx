@@ -52,7 +52,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
             </span>
             <span className="photo-caption">
               <span>{photo.caption}</span>
-              <small>{photo.credit}</small>
+              {photo.credit ? <small>{photo.credit}</small> : null}
             </span>
           </button>
         ))}
@@ -84,7 +84,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
             />
             <figcaption>
               <strong>{selectedPhoto.caption}</strong>
-              <span>{selectedPhoto.credit}</span>
+              {selectedPhoto.credit ? <span>{selectedPhoto.credit}</span> : null}
             </figcaption>
           </figure>
         </div>
