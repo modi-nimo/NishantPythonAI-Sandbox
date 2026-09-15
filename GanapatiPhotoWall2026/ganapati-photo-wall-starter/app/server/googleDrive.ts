@@ -8,7 +8,7 @@ const GOOGLE_API_SCOPES = [
 ].join(" ");
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const DRIVE_FILES_URL = "https://www.googleapis.com/drive/v3/files";
-const SHEETS_VALUES_URL = "https://sheets.googleapis.com/v4/spreadsheets";
+const SHEETS_URL = "https://sheets.googleapis.com/v4/spreadsheets";
 const TOKEN_LIFETIME_SECONDS = 3600;
 
 type DriveFile = {
@@ -31,6 +31,36 @@ type AccessToken = {
 type ResponseLabel = {
   caption: string;
   uploader: string;
+};
+
+type ResponseLabels = {
+  byFileId: Map<string, ResponseLabel>;
+  byFileName: Array<{
+    key: string;
+    label: ResponseLabel;
+  }>;
+};
+
+type SheetCell = {
+  formattedValue?: string;
+  hyperlink?: string;
+  textFormatRuns?: Array<{
+    format?: {
+      link?: {
+        uri?: string;
+      };
+    };
+  }>;
+};
+
+type SheetPayload = {
+  sheets?: Array<{
+    data?: Array<{
+      rowData?: Array<{
+        values?: SheetCell[];
+      }>;
+    }>;
+  }>;
 };
 
 let cachedAccessToken: AccessToken | null = null;
@@ -231,32 +261,75 @@ function extractDriveFileIds(value: string) {
   );
 }
 
+function normalizeFileReference(value: string) {
+  return value
+    .replace(/\.[a-z0-9]{2,5}$/i, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function getCellText(cell: SheetCell) {
+  return cell.formattedValue ?? "";
+}
+
+function getCellLinks(cell: SheetCell) {
+  const links = new Set<string>();
+
+  if (cell.hyperlink) {
+    links.add(cell.hyperlink);
+  }
+
+  for (const run of cell.textFormatRuns ?? []) {
+    const uri = run.format?.link?.uri;
+
+    if (uri) {
+      links.add(uri);
+    }
+  }
+
+  return Array.from(links);
+}
+
+function getEmptyResponseLabels(): ResponseLabels {
+  return {
+    byFileId: new Map<string, ResponseLabel>(),
+    byFileName: [],
+  };
+}
+
 async function fetchResponseLabels(
   accessToken: string,
   sheetId?: string,
   sheetRange?: string,
 ) {
   if (!sheetId) {
-    return new Map<string, ResponseLabel>();
+    return getEmptyResponseLabels();
   }
 
-  const encodedRange = encodeURIComponent(sheetRange || "Form Responses 1");
-  const response = await fetch(
-    `${SHEETS_VALUES_URL}/${encodeURIComponent(sheetId)}/values/${encodedRange}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      next: { revalidate: 60 },
+  const params = new URLSearchParams({
+    includeGridData: "true",
+    ranges: sheetRange || "Form Responses 1",
+    fields:
+      "sheets(data(rowData(values(formattedValue,hyperlink,textFormatRuns(format/link/uri)))))",
+  });
+  const response = await fetch(`${SHEETS_URL}/${encodeURIComponent(sheetId)}?${params}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+    next: { revalidate: 60 },
+  });
 
   if (!response.ok) {
     throw new Error(`Google Sheets read failed with status ${response.status}.`);
   }
 
-  const payload = (await response.json()) as { values?: string[][] };
-  const [headers = [], ...rows] = payload.values ?? [];
+  const payload = (await response.json()) as SheetPayload;
+  const rows =
+    payload.sheets?.flatMap((sheet) =>
+      sheet.data?.flatMap((data) => data.rowData ?? []) ?? [],
+    ) ?? [];
+  const [headerRow, ...responseRows] = rows;
+  const headers = headerRow?.values?.map(getCellText) ?? [];
   const captionIndex = findHeaderIndex(headers, ["captionforyourphoto"]);
   const uploaderIndex = findHeaderIndex(headers, [
     "personwhouploadedit",
@@ -264,26 +337,56 @@ async function fetchResponseLabels(
     "yourname",
     "name",
   ]);
-  const labels = new Map<string, ResponseLabel>();
+  const labels = getEmptyResponseLabels();
 
-  for (const row of rows) {
-    const caption = captionIndex >= 0 ? row[captionIndex] ?? "" : "";
-    const uploader = uploaderIndex >= 0 ? row[uploaderIndex] ?? "" : "";
-    const fileIds = row.flatMap((cell) => extractDriveFileIds(cell ?? ""));
+  for (const row of responseRows) {
+    const cells = row.values ?? [];
+    const caption = captionIndex >= 0 ? getCellText(cells[captionIndex] ?? {}) : "";
+    const uploader =
+      uploaderIndex >= 0 ? getCellText(cells[uploaderIndex] ?? {}) : "";
+    const label = { caption, uploader };
 
-    for (const fileId of fileIds) {
-      labels.set(fileId, { caption, uploader });
+    for (const cell of cells) {
+      const text = getCellText(cell);
+      const links = getCellLinks(cell);
+      const fileIds = [
+        ...extractDriveFileIds(text),
+        ...links.flatMap(extractDriveFileIds),
+      ];
+      const fileNameKey = normalizeFileReference(text);
+
+      for (const fileId of fileIds) {
+        labels.byFileId.set(fileId, label);
+      }
+
+      if (fileNameKey.length >= 6) {
+        labels.byFileName.push({ key: fileNameKey, label });
+      }
     }
   }
 
   return labels;
 }
 
+function findResponseLabel(file: DriveFile, responseLabels: ResponseLabels) {
+  const labelById = responseLabels.byFileId.get(file.id);
+
+  if (labelById) {
+    return labelById;
+  }
+
+  const fileNameKey = normalizeFileReference(file.name);
+
+  return responseLabels.byFileName.find(
+    ({ key }) => fileNameKey.includes(key) || key.includes(fileNameKey),
+  )?.label;
+}
+
 function mapDriveFileToPhoto(
   file: DriveFile,
-  responseLabels: Map<string, ResponseLabel>,
+  responseLabels: ResponseLabels,
 ): GalleryPhoto {
-  const displayName = getDisplayName(file.name, responseLabels.get(file.id));
+  const displayName = getDisplayName(file.name, findResponseLabel(file, responseLabels));
 
   return {
     id: file.id,
@@ -326,7 +429,7 @@ export async function fetchPublishedDrivePhotos(): Promise<PhotoResult> {
     }
 
     const payload = (await response.json()) as { files?: DriveFile[] };
-    let responseLabels = new Map<string, ResponseLabel>();
+    let responseLabels = getEmptyResponseLabels();
 
     try {
       responseLabels = await fetchResponseLabels(
