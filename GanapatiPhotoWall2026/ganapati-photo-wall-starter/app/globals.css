@@ -210,6 +210,12 @@ select {
   transform: translateY(-2px);
 }
 
+.button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+  transform: none;
+}
+
 .button-primary {
   color: #fff;
   background: linear-gradient(135deg, var(--saffron), var(--rose));
@@ -271,6 +277,11 @@ select {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-auto-flow: dense;
   gap: 16px;
+}
+
+.photo-grid-tiles {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .photo-card {
@@ -344,6 +355,36 @@ select {
 .photo-caption small {
   color: var(--muted);
   font-size: 12px;
+}
+
+.photo-grid-tiles .photo-card {
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(93, 48, 16, 0.1);
+}
+
+.photo-grid-tiles .photo-frame {
+  min-height: 180px;
+}
+
+.photo-grid-tiles .photo-caption {
+  padding: 10px 11px 12px;
+}
+
+.photo-grid-tiles .photo-caption span {
+  font-size: 13px;
+}
+
+.wall-more-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 26px;
+}
+
+.load-more-error {
+  margin: 18px 0 0;
+  color: var(--rose);
+  font-weight: 800;
+  text-align: center;
 }
 
 .empty-state {
@@ -468,6 +509,36 @@ select {
 
 .lightbox-content span {
   color: rgba(255, 248, 239, 0.74);
+}
+
+.photos-page-hero {
+  padding: 56px 0 24px;
+}
+
+.photos-page-heading {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.photos-page-heading h1 {
+  margin: 8px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(42px, 7vw, 82px);
+  line-height: 0.95;
+}
+
+.photos-page-heading p {
+  max-width: 620px;
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.photos-page-section {
+  padding: 16px 0 76px;
 }
 
 .sponsors-section {
@@ -678,6 +749,10 @@ select {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .photo-grid-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .steps-grid {
     grid-template-columns: 1fr;
   }
@@ -823,6 +898,11 @@ select {
     gap: 14px;
   }
 
+  .photo-grid-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
   .photo-card-landscape,
   .photo-card-tall {
     grid-column: auto;
@@ -838,8 +918,52 @@ select {
     aspect-ratio: auto;
   }
 
+  .photo-grid-tiles .photo-card-landscape,
+  .photo-grid-tiles .photo-card-tall {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .photo-grid-tiles .photo-frame,
+  .photo-grid-tiles .photo-card-landscape .photo-frame,
+  .photo-grid-tiles .photo-card-square .photo-frame,
+  .photo-grid-tiles .photo-card-tall .photo-frame {
+    height: min(42vw, 210px);
+    min-height: 150px;
+  }
+
   .photo-caption {
     padding: 12px 13px 14px;
+  }
+
+  .photo-grid-tiles .photo-caption {
+    padding: 9px 10px 10px;
+  }
+
+  .photo-grid-tiles .photo-caption span {
+    font-size: 12px;
+  }
+
+  .photos-page-hero {
+    padding: 34px 0 14px;
+  }
+
+  .photos-page-heading {
+    display: grid;
+    gap: 18px;
+  }
+
+  .photos-page-heading h1 {
+    font-size: clamp(38px, 12vw, 54px);
+  }
+
+  .photos-page-heading p {
+    margin-top: 12px;
+    font-size: 15px;
+  }
+
+  .photos-page-section {
+    padding: 12px 0 44px;
   }
 
   .steps-section {

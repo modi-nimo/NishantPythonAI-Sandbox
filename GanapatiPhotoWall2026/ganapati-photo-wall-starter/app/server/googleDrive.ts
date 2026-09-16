@@ -429,16 +429,26 @@ function mapDriveFileToPhoto(
   };
 }
 
-async function fetchDriveFiles(accessToken: string, folderId: string) {
+async function fetchDriveFiles(
+  accessToken: string,
+  folderId: string,
+  pageSize = 30,
+  pageToken?: string,
+) {
   const params = new URLSearchParams({
     q: `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`,
     orderBy: "createdTime desc",
-    pageSize: "30",
+    pageSize: String(pageSize),
     fields:
-      "files(id,name,mimeType,createdTime,modifiedTime,imageMediaMetadata(width,height))",
+      "nextPageToken,files(id,name,mimeType,createdTime,modifiedTime,imageMediaMetadata(width,height))",
     supportsAllDrives: "true",
     includeItemsFromAllDrives: "true",
   });
+
+  if (pageToken) {
+    params.set("pageToken", pageToken);
+  }
+
   const response = await fetch(`${DRIVE_FILES_URL}?${params.toString()}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -450,9 +460,15 @@ async function fetchDriveFiles(accessToken: string, folderId: string) {
     throw new Error(`Google Drive list failed with status ${response.status}.`);
   }
 
-  const payload = (await response.json()) as { files?: DriveFile[] };
+  const payload = (await response.json()) as {
+    files?: DriveFile[];
+    nextPageToken?: string;
+  };
 
-  return payload.files ?? [];
+  return {
+    files: payload.files ?? [],
+    nextPageToken: payload.nextPageToken,
+  };
 }
 
 async function getResponseLabelsSafely(
@@ -480,7 +496,7 @@ export async function getPhotoLabelDiagnostics() {
   }
 
   const accessToken = await getGoogleDriveAccessToken();
-  const files = await fetchDriveFiles(accessToken, config.folderId);
+  const { files } = await fetchDriveFiles(accessToken, config.folderId);
   const responseLabels = await getResponseLabelsSafely(
     accessToken,
     config.responsesSheetId,
@@ -515,7 +531,10 @@ export async function getPhotoLabelDiagnostics() {
   };
 }
 
-export async function fetchPublishedDrivePhotos(): Promise<PhotoResult> {
+export async function fetchPublishedDrivePhotos(
+  pageSize = 30,
+  pageToken?: string,
+): Promise<PhotoResult> {
   const config = getDriveConfig();
 
   if (!config) {
@@ -524,7 +543,12 @@ export async function fetchPublishedDrivePhotos(): Promise<PhotoResult> {
 
   try {
     const accessToken = await getGoogleDriveAccessToken();
-    const files = await fetchDriveFiles(accessToken, config.folderId);
+    const { files, nextPageToken } = await fetchDriveFiles(
+      accessToken,
+      config.folderId,
+      pageSize,
+      pageToken,
+    );
     const responseLabels = await getResponseLabelsSafely(
       accessToken,
       config.responsesSheetId,
@@ -547,6 +571,7 @@ export async function fetchPublishedDrivePhotos(): Promise<PhotoResult> {
       photos,
       status: "connected",
       message: "Fresh moments from Sensorium's Ganapati celebration.",
+      nextPageToken,
     };
   } catch (error) {
     console.error(error);

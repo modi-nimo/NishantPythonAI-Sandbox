@@ -13,6 +13,7 @@ export type PhotoResult = {
   photos: GalleryPhoto[];
   status: "sample" | "connected" | "empty" | "error";
   message: string;
+  nextPageToken?: string;
 };
 
 export const samplePhotos: GalleryPhoto[] = [

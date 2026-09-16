@@ -37,7 +37,7 @@ export default async function HomePage() {
             Sensorium Cha Vighnaharta
           </Link>
           <nav className="nav-links" aria-label="Main navigation">
-            <a href="#wall">Memories</a>
+            <Link href="/photos">Memories</Link>
             <a href="#how-it-works">How It Works</a>
             <Link href="/upload">Share Photo</Link>
           </nav>
@@ -59,9 +59,9 @@ export default async function HomePage() {
               <Link href="/upload" className="button button-primary">
                 Share Your Photo
               </Link>
-              <a href="#wall" className="button button-secondary">
+              <Link href="/photos" className="button button-secondary">
                 View Memories
-              </a>
+              </Link>
             </div>
 
             <div className="hero-meta" aria-label="Photo wall status">
@@ -97,7 +97,14 @@ export default async function HomePage() {
           </div>
 
           {photoResult.photos.length > 0 ? (
-            <PhotoGallery photos={photoResult.photos} />
+            <>
+              <PhotoGallery photos={photoResult.photos.slice(0, 12)} />
+              <div className="wall-more-action">
+                <Link href="/photos" className="button button-secondary">
+                  See More
+                </Link>
+              </div>
+            </>
           ) : (
             <div className="empty-state">
               <h3>No photos yet</h3>

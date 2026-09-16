@@ -6,9 +6,10 @@ import type { GalleryPhoto } from "../server/photos";
 
 type PhotoGalleryProps = {
   photos: GalleryPhoto[];
+  variant?: "wall" | "tiles";
 };
 
-export function PhotoGallery({ photos }: PhotoGalleryProps) {
+export function PhotoGallery({ photos, variant = "wall" }: PhotoGalleryProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<GalleryPhoto | null>(null);
 
   useEffect(() => {
@@ -33,7 +34,10 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
 
   return (
     <>
-      <div className="photo-grid" aria-label="Ganapati festival photo gallery">
+      <div
+        className={`photo-grid photo-grid-${variant}`}
+        aria-label="Ganapati festival photo gallery"
+      >
         {photos.map((photo, index) => (
           <button
             className={`photo-card photo-card-${photo.aspect}`}
