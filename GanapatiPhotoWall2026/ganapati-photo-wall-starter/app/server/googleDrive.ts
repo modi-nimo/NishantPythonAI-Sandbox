@@ -10,6 +10,7 @@ const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const DRIVE_FILES_URL = "https://www.googleapis.com/drive/v3/files";
 const SHEETS_URL = "https://sheets.googleapis.com/v4/spreadsheets";
 const TOKEN_LIFETIME_SECONDS = 3600;
+const PHOTO_LIST_REVALIDATE_SECONDS = 600;
 
 type DriveFile = {
   id: string;
@@ -39,6 +40,12 @@ type ResponseLabels = {
     key: string;
     label: ResponseLabel;
   }>;
+  debug: {
+    captionIndex: number;
+    headers: string[];
+    rowCount: number;
+    uploaderIndex: number;
+  };
 };
 
 type SheetCell = {
@@ -294,7 +301,23 @@ function getEmptyResponseLabels(): ResponseLabels {
   return {
     byFileId: new Map<string, ResponseLabel>(),
     byFileName: [],
+    debug: {
+      captionIndex: -1,
+      headers: [],
+      rowCount: 0,
+      uploaderIndex: -1,
+    },
   };
+}
+
+function getSheetRange(sheetRange?: string) {
+  const range = sheetRange || "Form Responses 1";
+
+  if (range.includes("!") || /^'.*'$/.test(range)) {
+    return range;
+  }
+
+  return `'${range.replaceAll("'", "''")}'`;
 }
 
 async function fetchResponseLabels(
@@ -308,7 +331,7 @@ async function fetchResponseLabels(
 
   const params = new URLSearchParams({
     includeGridData: "true",
-    ranges: sheetRange || "Form Responses 1",
+    ranges: getSheetRange(sheetRange),
     fields:
       "sheets(data(rowData(values(formattedValue,hyperlink,textFormatRuns(format/link/uri)))))",
   });
@@ -316,7 +339,7 @@ async function fetchResponseLabels(
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-    next: { revalidate: 60 },
+    next: { revalidate: PHOTO_LIST_REVALIDATE_SECONDS },
   });
 
   if (!response.ok) {
@@ -338,6 +361,12 @@ async function fetchResponseLabels(
     "name",
   ]);
   const labels = getEmptyResponseLabels();
+  labels.debug = {
+    captionIndex,
+    headers,
+    rowCount: responseRows.length,
+    uploaderIndex,
+  };
 
   for (const row of responseRows) {
     const cells = row.values ?? [];
@@ -390,12 +419,99 @@ function mapDriveFileToPhoto(
 
   return {
     id: file.id,
-    src: `/api/photos/${file.id}/image`,
+    src: `/api/photos/${file.id}/thumb`,
+    fullSrc: `/api/photos/${file.id}/image`,
     alt: `Ganapati festival photo: ${displayName}`,
     caption: displayName,
     credit: "",
     aspect: getAspect(file),
     source: "drive",
+  };
+}
+
+async function fetchDriveFiles(accessToken: string, folderId: string) {
+  const params = new URLSearchParams({
+    q: `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`,
+    orderBy: "createdTime desc",
+    pageSize: "30",
+    fields:
+      "files(id,name,mimeType,createdTime,modifiedTime,imageMediaMetadata(width,height))",
+    supportsAllDrives: "true",
+    includeItemsFromAllDrives: "true",
+  });
+  const response = await fetch(`${DRIVE_FILES_URL}?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    next: { revalidate: PHOTO_LIST_REVALIDATE_SECONDS },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Google Drive list failed with status ${response.status}.`);
+  }
+
+  const payload = (await response.json()) as { files?: DriveFile[] };
+
+  return payload.files ?? [];
+}
+
+async function getResponseLabelsSafely(
+  accessToken: string,
+  sheetId?: string,
+  sheetRange?: string,
+) {
+  try {
+    return await fetchResponseLabels(accessToken, sheetId, sheetRange);
+  } catch (error) {
+    console.error(error);
+
+    return getEmptyResponseLabels();
+  }
+}
+
+export async function getPhotoLabelDiagnostics() {
+  const config = getDriveConfig();
+
+  if (!config) {
+    return {
+      configured: false,
+      error: "Google configuration is missing.",
+    };
+  }
+
+  const accessToken = await getGoogleDriveAccessToken();
+  const files = await fetchDriveFiles(accessToken, config.folderId);
+  const responseLabels = await getResponseLabelsSafely(
+    accessToken,
+    config.responsesSheetId,
+    config.responsesSheetRange,
+  );
+  const samples = files.slice(0, 12).map((file) => {
+    const label = findResponseLabel(file, responseLabels);
+
+    return {
+      fileName: file.name,
+      matched: Boolean(label),
+      label: getDisplayName(file.name, label),
+    };
+  });
+
+  return {
+    configured: true,
+    driveFileCount: files.length,
+    responseSheetConfigured: Boolean(config.responsesSheetId),
+    responseSheetRange: getSheetRange(config.responsesSheetRange),
+    sheet: {
+      captionIndex: responseLabels.debug.captionIndex,
+      headers: responseLabels.debug.headers,
+      rowCount: responseLabels.debug.rowCount,
+      uploaderIndex: responseLabels.debug.uploaderIndex,
+    },
+    labelCounts: {
+      byFileId: responseLabels.byFileId.size,
+      byFileName: responseLabels.byFileName.length,
+    },
+    samples,
   };
 }
 
@@ -408,40 +524,14 @@ export async function fetchPublishedDrivePhotos(): Promise<PhotoResult> {
 
   try {
     const accessToken = await getGoogleDriveAccessToken();
-    const params = new URLSearchParams({
-      q: `'${config.folderId}' in parents and mimeType contains 'image/' and trashed = false`,
-      orderBy: "createdTime desc",
-      pageSize: "48",
-      fields:
-        "files(id,name,mimeType,createdTime,modifiedTime,imageMediaMetadata(width,height))",
-      supportsAllDrives: "true",
-      includeItemsFromAllDrives: "true",
-    });
-    const response = await fetch(`${DRIVE_FILES_URL}?${params.toString()}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      next: { revalidate: 60 },
-    });
+    const files = await fetchDriveFiles(accessToken, config.folderId);
+    const responseLabels = await getResponseLabelsSafely(
+      accessToken,
+      config.responsesSheetId,
+      config.responsesSheetRange,
+    );
 
-    if (!response.ok) {
-      throw new Error(`Google Drive list failed with status ${response.status}.`);
-    }
-
-    const payload = (await response.json()) as { files?: DriveFile[] };
-    let responseLabels = getEmptyResponseLabels();
-
-    try {
-      responseLabels = await fetchResponseLabels(
-        accessToken,
-        config.responsesSheetId,
-        config.responsesSheetRange,
-      );
-    } catch (error) {
-      console.error(error);
-    }
-
-    const photos = (payload.files ?? []).map((file) =>
+    const photos = files.map((file) =>
       mapDriveFileToPhoto(file, responseLabels),
     );
 

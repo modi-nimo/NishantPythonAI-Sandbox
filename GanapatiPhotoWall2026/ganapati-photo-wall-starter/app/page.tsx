@@ -4,7 +4,7 @@ import { PhotoGallery } from "./components/PhotoGallery";
 import { fetchPublishedDrivePhotos } from "./server/googleDrive";
 
 export const runtime = "nodejs";
-export const revalidate = 60;
+export const revalidate = 600;
 
 const sponsors = [
   {

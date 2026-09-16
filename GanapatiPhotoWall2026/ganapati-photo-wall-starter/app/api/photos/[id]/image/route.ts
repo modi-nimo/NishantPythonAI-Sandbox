@@ -14,7 +14,7 @@ export async function GET(
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-      cache: "no-store",
+      next: { revalidate: 86_400 },
     },
   );
 
@@ -24,7 +24,7 @@ export async function GET(
 
   return new Response(response.body, {
     headers: {
-      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800",
       "Content-Type": response.headers.get("content-type") ?? "image/jpeg",
     },
   });

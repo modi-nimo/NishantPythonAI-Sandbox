@@ -48,6 +48,20 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
                 alt={photo.alt}
                 loading={index < 2 ? "eager" : "lazy"}
                 decoding="async"
+                onError={(event) => {
+                  if (!photo.fullSrc) {
+                    return;
+                  }
+
+                  const fallbackSrc = new URL(
+                    photo.fullSrc,
+                    window.location.href,
+                  ).href;
+
+                  if (event.currentTarget.src !== fallbackSrc) {
+                    event.currentTarget.src = fallbackSrc;
+                  }
+                }}
               />
             </span>
             <span className="photo-caption">
@@ -79,7 +93,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
             onClick={(event) => event.stopPropagation()}
           >
             <img
-              src={selectedPhoto.src}
+              src={selectedPhoto.fullSrc ?? selectedPhoto.src}
               alt={selectedPhoto.alt}
             />
             <figcaption>

@@ -1,6 +1,7 @@
 export type GalleryPhoto = {
   id: string;
   src: string;
+  fullSrc?: string;
   alt: string;
   caption: string;
   credit: string;
